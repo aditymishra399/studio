@@ -28,8 +28,7 @@ export default function ConversationPage() {
     if (!currentUser || !conversationId) return;
 
     const convRef = doc(db, "conversations", conversationId);
-    let unsubscribe: () => void = () => {};
-
+    
     const fetchInitialData = async () => {
       try {
         const docSnap = await getDoc(convRef);
@@ -51,14 +50,6 @@ export default function ConversationPage() {
           convData.participants = participants.filter(p => p !== null) as User[];
           
           setConversation(convData);
-
-          // Now, set up the real-time listener only for updates
-          unsubscribe = onSnapshot(convRef, (doc) => {
-            if (doc.exists()) {
-               setConversation(prev => prev ? { ...prev, messages: doc.data().messages, lastMessage: doc.data().lastMessage } : null);
-            }
-          });
-
         } else {
           toast({ variant: "destructive", title: "Not Found", description: "This conversation does not exist." });
           router.push('/chat');
@@ -72,6 +63,21 @@ export default function ConversationPage() {
     };
     
     fetchInitialData();
+    
+    const unsubscribe = onSnapshot(convRef, (doc) => {
+        if (doc.exists()) {
+            const updatedData = doc.data();
+            setConversation(prev => {
+                // If we have a previous state, update it. Otherwise, we might be in a state where initial fetch hasn't completed.
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    messages: updatedData.messages,
+                    lastMessage: updatedData.lastMessage
+                };
+            });
+        }
+    });
 
     return () => {
       unsubscribe();
@@ -80,8 +86,6 @@ export default function ConversationPage() {
 
   const appUser = React.useMemo(() => {
     if (!currentUser || !conversation) return undefined;
-    // The user object on `currentUser` might be from auth, not firestore.
-    // We find the full user profile from the conversation's participants list.
     return conversation.participants.find(p => p.id === currentUser.uid);
   }, [currentUser, conversation]);
 
@@ -130,8 +134,6 @@ export default function ConversationPage() {
   }
 
   if (!conversation || !appUser) {
-    // This can happen briefly or if there's an error.
-    // A more specific error message could be shown here based on why it failed.
     return null;
   }
 

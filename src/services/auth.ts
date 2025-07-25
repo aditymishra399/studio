@@ -1,5 +1,5 @@
 
-import { auth, storage } from "@/lib/firebase";
+import { auth, storage, db } from "@/lib/firebase";
 import { 
   signInWithEmailAndPassword as firebaseSignIn, 
   createUserWithEmailAndPassword as firebaseSignUp,
@@ -10,6 +10,14 @@ import {
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { createUserProfile, updateUserDocument, isUsernameTaken } from "./firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
+
+async function isEmailTaken(email: string): Promise<boolean> {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("email", "==", email));
+  const querySnapshot = await getDocs(q);
+  return !querySnapshot.empty;
+}
 
 export async function signInWithEmailAndPassword(email: string, password: string): Promise<void> {
   try {
@@ -40,6 +48,12 @@ export async function createUserWithEmailAndPassword(email: string, password: st
   if (usernameExists) {
     throw new Error("Username is already taken. Please choose another one.");
   }
+  
+  const emailExists = await isEmailTaken(email);
+  if (emailExists) {
+    throw new Error("An account with this email already exists.");
+  }
+
 
   try {
     const userCredential = await firebaseSignUp(auth, email, password);
@@ -63,7 +77,7 @@ export async function createUserWithEmailAndPassword(email: string, password: st
   } catch (error: any) {
     console.error("Error signing up:", error);
     // If the error is one of our custom ones, re-throw it. Otherwise, use the firebase error message.
-    if (error.message.startsWith("Username is already taken") || error.message.startsWith("Please use a valid email provider")) {
+    if (error.message.startsWith("Username is already taken") || error.message.startsWith("Please use a valid email provider") || error.message.startsWith("An account with this email")) {
         throw error;
     }
     throw new Error(error.message || "Failed to sign up.");

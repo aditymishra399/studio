@@ -33,6 +33,7 @@ export const createUserProfile = async (uid: string, name: string, email: string
 // Check if a username is already taken
 export const isUsernameTaken = async (name: string): Promise<boolean> => {
     const usersRef = collection(db, "users");
+    // Use case-insensitive query if your Firestore setup supports it, otherwise this is case-sensitive.
     const q = query(usersRef, where("name", "==", name));
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
@@ -96,7 +97,7 @@ export const sendMessage = async (conversationId: string, senderId: string, cont
     id: doc(collection(db, "tmp")).id, // Generate a unique ID for the message
     senderId,
     content,
-    timestamp: new Date(), // Use a client-side date object
+    timestamp: serverTimestamp(), // Use server timestamp for consistency
   };
 
   await updateDoc(conversationRef, {
@@ -116,19 +117,17 @@ export const createConversation = async (currentUser: User, otherUser: User): Pr
     }
     const docRef = await addDoc(conversationRef, newConversationData);
     
-    const participants = [currentUser, otherUser];
-
+    // We can just return the ID, the conversation list listener will pick up the new conversation
     return { 
         id: docRef.id, 
         ...newConversationData, 
-        participants,
-        lastMessage: null, // ensure it's not undefined
-        messages: []      // ensure it's not undefined
+        participants: [currentUser, otherUser],
     } as Conversation;
 }
 
 export const findExistingConversation = async (currentUserId: string, otherUserId: string): Promise<Conversation | null> => {
     const conversationsRef = collection(db, "conversations");
+    // participantIds are sorted, so we can build the exact array to query
     const sortedIds = [currentUserId, otherUserId].sort();
     
     const q = query(
@@ -138,20 +137,12 @@ export const findExistingConversation = async (currentUserId: string, otherUserI
     );
     
     const querySnapshot = await getDocs(q);
-
-    let foundConversation: Conversation | null = null;
     
     if (!querySnapshot.empty) {
         const docSnapshot = querySnapshot.docs[0];
-        foundConversation = { id: docSnapshot.id, ...docSnapshot.data() } as Conversation;
-         const participants = await Promise.all(
-            foundConversation.participantIds.map(async (id) => {
-                const userDoc = await getDoc(doc(db, "users", id));
-                return userDoc.exists() ? userDoc.data() as User : null;
-            })
-        );
-        foundConversation.participants = participants.filter(u => u) as User[];
+        // Don't need to populate participants here, it's just for navigation
+        return { id: docSnapshot.id, ...docSnapshot.data() } as Conversation;
     }
 
-    return foundConversation;
+    return null;
 }
