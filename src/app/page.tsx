@@ -28,7 +28,7 @@ export default function Home() {
               safe, redacting sensitive information before it's ever sent.
             </p>
             <Link href="/chat">
-              <Button size="lg">Start Whispering</Button>
+              <Button size="lg">Start Secure Chat</Button>
             </Link>
           </div>
         </section>
