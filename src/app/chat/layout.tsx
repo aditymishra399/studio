@@ -33,7 +33,7 @@ export default function ChatLayout({
 
   const isChatPage = pathname === '/chat';
   const isNewChatPage = pathname === '/chat/new';
-  const isProfilePage = pathname === '/profile';
+  const isProfilePage = pathname === '/chat/profile';
   const showBackButton = !isChatPage && !isProfilePage;
 
 
@@ -84,7 +84,7 @@ export default function ChatLayout({
               )}
                <h1 className="text-2xl font-bold text-primary tracking-tight">
                 {isNewChatPage ? 'New Chat' : isProfilePage ? 'Profile' : 'SilentLine'}
-              </h1>
+               </h1>
             </div>
             <div className="flex items-center gap-2">
                  <Button variant="ghost" size="icon">
@@ -105,7 +105,7 @@ export default function ChatLayout({
         </main>
         
         <nav className="flex justify-around p-2 border-t bg-background fixed bottom-0 w-full">
-            <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname.startsWith('/chat') ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
+            <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname.startsWith('/chat') && !pathname.includes('/chat/profile') ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
                 <MessageSquare className="w-6 h-6"/>
                 <span className="text-xs font-medium">Chats</span>
             </Link>
@@ -117,7 +117,7 @@ export default function ChatLayout({
                 <Phone className="w-6 h-6"/>
                 <span className="text-xs font-medium">Calls</span>
             </Link>
-            <Link href="/profile" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname === '/profile' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
+            <Link href="/chat/profile" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname === '/chat/profile' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
                 <UserIcon className="w-6 h-6"/>
                 <span className="text-xs font-medium">Profile</span>
             </Link>
