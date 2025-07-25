@@ -5,10 +5,11 @@ import {
   createUserWithEmailAndPassword as firebaseSignUp,
   signOut as firebaseSignOut,
   updateProfile,
-  sendPasswordResetEmail as firebaseSendPasswordResetEmail
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  User
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { createUserProfile } from "./firestore";
+import { createUserProfile, updateUserDocument } from "./firestore";
 
 export async function signInWithEmailAndPassword(email: string, password: string): Promise<void> {
   try {
@@ -45,10 +46,38 @@ export async function createUserWithEmailAndPassword(email: string, password: st
   }
 }
 
+export async function updateUserProfile(user: User, name: string, photo: File | null): Promise<void> {
+    try {
+        let photoURL = user.photoURL;
+
+        if (photo) {
+            const storageRef = ref(storage, `avatars/${user.uid}/${photo.name}`);
+            const snapshot = await uploadBytes(storageRef, photo);
+            photoURL = await getDownloadURL(snapshot.ref);
+        }
+
+        await updateProfile(user, {
+            displayName: name,
+            photoURL: photoURL,
+        });
+        
+        await updateUserDocument(user.uid, {
+            name,
+            avatarUrl: photoURL,
+        });
+
+    } catch (error: any) {
+        console.error("Error updating profile:", error);
+        throw new Error(error.message || "Failed to update profile.");
+    }
+}
+
+
 export async function signOut(): Promise<void> {
   try {
     await firebaseSignOut(auth);
-  } catch (error: any) {
+  } catch (error: any)
+  {
     console.error("Error signing out:", error);
     throw new Error(error.message || "Failed to sign out.");
   }

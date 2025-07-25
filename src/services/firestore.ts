@@ -30,6 +30,13 @@ export const createUserProfile = async (uid: string, name: string, email: string
     });
 };
 
+// Update a user profile document in Firestore
+export const updateUserDocument = async (uid: string, data: Partial<User>) => {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, data);
+};
+
+
 // Fetch all users for discovery (you might want to paginate this in a real app)
 export const getAllUsers = (callback: (users: User[]) => void) => {
     const q = query(collection(db, "users"));
