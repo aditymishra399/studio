@@ -1,29 +1,35 @@
-import { defineFlow, run } from "genkit";
-import { z } from "zod";
-import { ai } from "../genkit";
 
-const redactInputSchema = z.object({
+'use server';
+/**
+ * @fileOverview A content redaction AI agent.
+ *
+ * - redact - A function that handles the content redaction process.
+ * - RedactInput - The input type for the redact function.
+ * - RedactOutput - The return type for the redact function.
+ */
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
+
+const RedactInputSchema = z.object({
   content: z.string(),
 });
+export type RedactInput = z.infer<typeof RedactInputSchema>;
 
-const redactOutputSchema = z.object({
+const RedactOutputSchema = z.object({
   redactedContent: z.string(),
   sensitiveTerms: z.array(z.string()),
 });
+export type RedactOutput = z.infer<typeof RedactOutputSchema>;
 
-export const redactContent = defineFlow(
-  {
-    name: "redactContent",
-    inputSchema: redactInputSchema,
-    outputSchema: redactOutputSchema,
-  },
-  async ({ content }) => {
-    if (!content.trim()) {
-      return { redactedContent: "", sensitiveTerms: [] };
-    }
+export async function redact(input: RedactInput): Promise<RedactOutput> {
+  return redactContentFlow(input);
+}
 
-    const llmResponse = await run("extract-sensitive-info", async () => {
-      const prompt = `
+const prompt = ai.definePrompt({
+  name: 'redactContentPrompt',
+  input: {schema: RedactInputSchema},
+  output: {schema: RedactOutputSchema},
+  prompt: `
         Analyze the following text for sensitive information like phone numbers, email addresses, social security numbers, and credit card numbers.
         Respond with a JSON object with two keys:
         1. "sensitiveTerms": an array of strings, where each string is a piece of sensitive information you found.
@@ -32,22 +38,29 @@ export const redactContent = defineFlow(
         If no sensitive information is found, return an empty array for "sensitiveTerms" and the original text for "redactedContent".
 
         Text to analyze:
-        "${content}"
-      `;
+        "{{{content}}}"
+      `,
+  config: {
+    temperature: 0.1,
+  },
+});
 
-      return await ai.generate({
-        prompt,
-        model: "googleai/gemini-2.0-flash",
-        config: {
-          temperature: 0.1,
-        },
-        output: {
-          format: "json",
-          schema: redactOutputSchema,
-        },
-      });
-    });
-
-    return llmResponse.output() || { redactedContent: content, sensitiveTerms: [] };
-  }
+const redactContentFlow = ai.defineFlow(
+  {
+    name: 'redactContentFlow',
+    inputSchema: RedactInputSchema,
+    outputSchema: RedactOutputSchema,
+  },
+  async ({content}) => {
+    if (!content.trim()) {
+      return {redactedContent: '', sensitiveTerms: []};
+    }
+    const {output} = await prompt({content});
+    return (
+      output || {
+        redactedContent: content,
+        sensitiveTerms: [],
+      }
+    );
+  },
 );
