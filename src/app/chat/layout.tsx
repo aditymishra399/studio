@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,17 +32,18 @@ export default function ChatLayout({
     router.push("/");
   };
 
-  const isChatPage = pathname === '/chat';
-  const isNewChatPage = pathname === '/chat/new';
-  const isProfilePage = pathname === '/chat/profile';
-  const isConversationPage = /^\/chat\/.+/.test(pathname) && !isNewChatPage && !isProfilePage;
+  const isConversationPage = useMemo(() => {
+    // A conversation ID is typically a long alphanumeric string from Firestore.
+    // This regex checks for a path segment after /chat/ that is longer than, say, 15 chars.
+    // This distinguishes it from shorter, predefined paths like /chat/new or /chat/profile.
+    return /^\/chat\/.{15,}/.test(pathname);
+  }, [pathname]);
 
   const title = useMemo(() => {
-    if (isNewChatPage) return 'New Chat';
-    if (isProfilePage) return 'Profile';
-    if (isChatPage) return 'SilentLine';
-    return 'SilentLine'; // Default title
-  }, [isNewChatPage, isProfilePage, isChatPage]);
+    if (pathname === '/chat/new') return 'New Chat';
+    if (pathname === '/chat/profile') return 'Profile';
+    return 'SilentLine'; // Default title for /chat and other pages
+  }, [pathname]);
 
 
   if (loading || !user) {
@@ -99,7 +100,7 @@ export default function ChatLayout({
                   <Button variant="ghost" size="icon" onClick={() => router.push('/chat/new')}>
                       <Search className="w-5 h-5"/>
                   </Button>
-                   <Avatar className="h-8 w-8">
+                   <Avatar className="h-8 w-8" onClick={() => router.push('/chat/profile')}>
                      <AvatarImage src={user.photoURL || undefined} alt="User avatar" data-ai-hint="person face" />
                       <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
                    </Avatar>
@@ -112,7 +113,7 @@ export default function ChatLayout({
         </main>
         
         <nav className="flex justify-around p-2 border-t bg-background fixed bottom-0 w-full">
-            <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname.startsWith('/chat') && !pathname.includes('/chat/profile') ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
+            <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", /^\/chat\/?$/.test(pathname) || isConversationPage ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
                 <MessageSquare className="w-6 h-6"/>
                 <span className="text-xs font-medium">Chats</span>
             </Link>

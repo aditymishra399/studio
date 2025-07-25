@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -53,15 +53,14 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Username is required" });
       return;
     }
-    setIsLoading(true);
+    setIsUpdating(true);
     try {
       await updateUserProfile(user, name, photo);
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
-      // Force a reload of the user data within the auth context
-       router.refresh();
+      // You may not need a full router.refresh() if the AuthProvider's onSnapshot listener works as expected
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -69,7 +68,7 @@ export default function ProfilePage() {
         description: error.message || "An unexpected error occurred.",
       });
     } finally {
-      setIsLoading(false);
+      setIsUpdating(false);
     }
   };
   
@@ -77,14 +76,14 @@ export default function ProfilePage() {
       return (
          <div className="flex items-center justify-center min-h-screen bg-background">
           <Card className="w-full max-w-md animate-pulse m-4">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Edit Profile</CardTitle>
-              <CardDescription>Update your account details.</CardDescription>
+            <CardHeader className="text-center space-y-4">
+              <div className="h-6 w-32 bg-muted rounded-md mx-auto" />
+              <div className="h-4 w-48 bg-muted rounded-md mx-auto" />
             </CardHeader>
             <CardContent>
                <div className="space-y-4">
                 <div className="space-y-2 flex flex-col items-center">
-                    <Avatar className="h-24 w-24 mb-2 bg-muted"></Avatar>
+                    <Skeleton className="h-24 w-24 rounded-full mb-2 bg-muted"></Skeleton>
                     <div className="h-8 w-28 bg-muted rounded-md" />
                 </div>
                 <div className="space-y-2">
@@ -95,11 +94,10 @@ export default function ProfilePage() {
                    <div className="h-5 w-20 bg-muted rounded-md" />
                     <div className="h-10 w-full bg-muted rounded-md" />
                 </div>
-                <div className="h-10 w-full bg-muted rounded-md mt-4" />
+                <div className="h-10 w-full bg-muted rounded-md mt-6" />
               </div>
             </CardContent>
              <CardFooter className="flex-col gap-4">
-               <div className="h-10 w-full bg-muted rounded-md" />
                <div className="h-10 w-full bg-muted rounded-md" />
             </CardFooter>
           </Card>
@@ -110,15 +108,19 @@ export default function ProfilePage() {
   return (
     <div className="flex items-center justify-center min-h-full bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
-          <form onSubmit={handleUpdateProfile} className="space-y-4">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Edit Profile</CardTitle>
+          <CardDescription>Update your account details below.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdateProfile} className="space-y-6">
             <div className="space-y-2 flex flex-col items-center">
                 <Avatar className="h-24 w-24 mb-2">
                     <AvatarImage src={photoPreview || undefined} alt="Avatar Preview" />
-                    <AvatarFallback><User className="w-8 h-8 text-muted-foreground"/></AvatarFallback>
+                    <AvatarFallback><User className="w-10 h-10 text-muted-foreground"/></AvatarFallback>
                 </Avatar>
                 <Input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden"/>
-                <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('photo-upload')?.click()} disabled={isLoading}>
+                <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('photo-upload')?.click()} disabled={isUpdating}>
                     <Upload className="mr-2 h-4 w-4" />
                     Change Photo
                 </Button>
@@ -134,7 +136,7 @@ export default function ProfilePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  disabled={isLoading}
+                  disabled={isUpdating}
                   className="pl-10"
                 />
               </div>
@@ -152,13 +154,13 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Saving Changes..." : "Save Changes"}
+            <Button type="submit" className="w-full" disabled={isUpdating}>
+              {isUpdating ? "Saving Changes..." : "Save Changes"}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex-col gap-2">
-             <Button variant="outline" className="w-full" onClick={handleSignOut} disabled={isLoading}>
+        <CardFooter className="flex-col gap-2 border-t pt-6">
+             <Button variant="outline" className="w-full" onClick={handleSignOut} disabled={isUpdating}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
             </Button>

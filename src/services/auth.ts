@@ -24,26 +24,24 @@ export async function signInWithEmailAndPassword(email: string, password: string
     await firebaseSignIn(auth, email, password);
   } catch (error: any) {
     console.error("Error signing in:", error);
-    throw new Error(error.message || "Failed to sign in.");
+    // Provide more user-friendly error messages
+    switch (error.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+            throw new Error('Invalid email or password.');
+        default:
+            throw new Error('An unexpected error occurred during sign in.');
+    }
   }
 }
 
 export async function createUserWithEmailAndPassword(email: string, password: string, name: string, photo: File | null): Promise<void> {
-  const allowedDomains = [
-    "gmail.com",
-    "hotmail.com",
-    "protonmail.com",
-    "outlook.com",
-    "yahoo.com",
-    "aol.com",
-    "icloud.com"
-  ];
-  const emailDomain = email.split('@')[1];
-
-  if (!emailDomain || !allowedDomains.includes(emailDomain.toLowerCase())) {
-    throw new Error("Please use a valid email provider (e.g., Gmail, Outlook, etc.). Disposable email addresses are not allowed.");
+  // Basic validation, more can be added (e.g., password strength)
+  if (password.length < 6) {
+    throw new Error("Password must be at least 6 characters long.");
   }
-
+  
   const usernameExists = await isUsernameTaken(name);
   if (usernameExists) {
     throw new Error("Username is already taken. Please choose another one.");
@@ -53,7 +51,6 @@ export async function createUserWithEmailAndPassword(email: string, password: st
   if (emailExists) {
     throw new Error("An account with this email already exists.");
   }
-
 
   try {
     const userCredential = await firebaseSignUp(auth, email, password);
@@ -66,21 +63,23 @@ export async function createUserWithEmailAndPassword(email: string, password: st
       const snapshot = await uploadBytes(storageRef, photo);
       photoURL = await getDownloadURL(snapshot.ref);
     }
-
+    
+    // Update Firebase Auth profile
     await updateProfile(user, {
       displayName: name,
       photoURL: photoURL
     });
 
+    // Create user document in Firestore
     await createUserProfile(user.uid, name, email, photoURL);
 
   } catch (error: any) {
     console.error("Error signing up:", error);
-    // If the error is one of our custom ones, re-throw it. Otherwise, use the firebase error message.
-    if (error.message.startsWith("Username is already taken") || error.message.startsWith("Please use a valid email provider") || error.message.startsWith("An account with this email")) {
+    // Re-throw custom errors, provide generic for others
+    if (error.message.startsWith("Username is already taken") || error.message.startsWith("An account with this email")) {
         throw error;
     }
-    throw new Error(error.message || "Failed to sign up.");
+    throw new Error("Failed to create an account. Please try again.");
   }
 }
 
@@ -94,11 +93,13 @@ export async function updateUserProfile(user: User, name: string, photo: File | 
             photoURL = await getDownloadURL(snapshot.ref);
         }
 
+        // Update Firebase Auth profile first
         await updateProfile(user, {
             displayName: name,
             photoURL: photoURL,
         });
         
+        // Then update the user document in Firestore
         await updateUserDocument(user.uid, {
             name,
             avatarUrl: photoURL,
@@ -106,7 +107,7 @@ export async function updateUserProfile(user: User, name: string, photo: File | 
 
     } catch (error: any) {
         console.error("Error updating profile:", error);
-        throw new Error(error.message || "Failed to update profile.");
+        throw new Error("Failed to update profile.");
     }
 }
 
@@ -117,7 +118,7 @@ export async function signOut(): Promise<void> {
   } catch (error: any)
   {
     console.error("Error signing out:", error);
-    throw new Error(error.message || "Failed to sign out.");
+    throw new Error("Failed to sign out.");
   }
 }
 
@@ -126,6 +127,9 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
         await firebaseSendPasswordResetEmail(auth, email);
     } catch (error: any) {
         console.error("Error sending password reset email:", error);
-        throw new Error(error.message || "Failed to send password reset email.");
+         if (error.code === 'auth/user-not-found') {
+            throw new Error("No account found with that email address.");
+        }
+        throw new Error("Failed to send password reset email.");
     }
 }
