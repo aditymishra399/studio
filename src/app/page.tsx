@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { BotMessageSquare, ShieldCheck, Zap } from "lucide-react";
+import { Fingerprint, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
 import AuthButton from "@/components/auth-button";
 
@@ -9,7 +9,7 @@ export default function Home() {
       <header className="p-4 border-b">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <BotMessageSquare className="w-8 h-8 text-primary" />
+            <Fingerprint className="w-8 h-8 text-primary" />
             <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
           </div>
           <nav className="flex items-center gap-4">

@@ -5,7 +5,7 @@ import type { Conversation, User } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BotMessageSquare, LogOut, Search } from "lucide-react";
+import { Fingerprint, LogOut, Search } from "lucide-react";
 import ConversationList from "./conversation-list";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ export default function ChatSidebar({
     <div className="hidden md:flex flex-col w-80 max-w-xs min-w-80 h-full bg-card border-r">
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <BotMessageSquare className="w-8 h-8 text-primary" />
+          <Fingerprint className="w-8 h-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
         </div>
         <div className="mt-4 relative">

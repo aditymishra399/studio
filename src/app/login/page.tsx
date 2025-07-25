@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { BotMessageSquare } from "lucide-react";
+import { Fingerprint } from "lucide-react";
 import { sendPasswordResetEmail } from "@/services/auth";
 
 export default function LoginPage() {
@@ -67,7 +67,7 @@ export default function LoginPage() {
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
             <div className="flex justify-center items-center gap-3 mb-4">
-              <BotMessageSquare className="w-8 h-8 text-primary" />
+              <Fingerprint className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold tracking-tight">SilentLine</h1>
             </div>
             <h2 className="text-2xl font-bold">Welcome Back</h2>

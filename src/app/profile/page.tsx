@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BotMessageSquare, Upload, User, Mail, ShieldCheck } from "lucide-react";
+import { Fingerprint, Upload, User, Mail, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateUserProfile } from "@/services/auth"; // We will create this function
 
@@ -74,7 +74,7 @@ export default function ProfilePage() {
           <Card className="w-full max-w-md animate-pulse">
             <CardHeader className="text-center">
                 <div className="flex justify-center items-center gap-3 mb-4">
-                 <BotMessageSquare className="w-8 h-8 text-primary" />
+                 <Fingerprint className="w-8 h-8 text-primary" />
                  <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
               </div>
               <CardTitle className="text-2xl">Edit Profile</CardTitle>
@@ -107,7 +107,7 @@ export default function ProfilePage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center gap-3 mb-4">
-             <BotMessageSquare className="w-8 h-8 text-primary" />
+             <Fingerprint className="w-8 h-8 text-primary" />
              <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
           </div>
           <CardTitle className="text-2xl">Edit Profile</CardTitle>

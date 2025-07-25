@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BotMessageSquare, Upload, User, Mail, Lock } from "lucide-react";
+import { Fingerprint, Upload, User, Mail, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
@@ -81,7 +81,7 @@ export default function SignUpPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center gap-3 mb-4">
-             <BotMessageSquare className="w-8 h-8 text-primary" />
+             <Fingerprint className="w-8 h-8 text-primary" />
              <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
           </div>
           <CardTitle className="text-2xl">Sign Up</CardTitle>
