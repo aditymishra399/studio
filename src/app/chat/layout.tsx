@@ -42,7 +42,7 @@ export default function ChatLayout({
     if (isProfilePage) return 'Profile';
     if (isChatPage) return 'SilentLine';
     return 'SilentLine'; // Default title
-  }, [pathname, isNewChatPage, isProfilePage, isChatPage]);
+  }, [isNewChatPage, isProfilePage, isChatPage]);
 
 
   if (loading || !user) {
