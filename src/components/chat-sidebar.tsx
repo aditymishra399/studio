@@ -1,10 +1,15 @@
+
+"use client";
+
 import type { Conversation, User } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BotMessageSquare, Settings } from "lucide-react";
+import { BotMessageSquare, LogOut } from "lucide-react";
 import ConversationList from "./conversation-list";
 import { users } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 
 interface ChatSidebarProps {
   conversations: Conversation[];
@@ -19,6 +24,13 @@ export default function ChatSidebar({
   onSelectConversation,
   currentUser,
 }: ChatSidebarProps) {
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+  };
   
   const populatedConversations = conversations.map(convo => {
     const participants = convo.participantIds.map(id => {
@@ -54,8 +66,8 @@ export default function ChatSidebar({
             </Avatar>
             <span className="font-medium">{currentUser.name}</span>
           </div>
-          <Button variant="ghost" size="icon">
-            <Settings className="w-5 h-5" />
+          <Button variant="ghost" size="icon" onClick={handleSignOut} title="Log Out">
+            <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </div>
