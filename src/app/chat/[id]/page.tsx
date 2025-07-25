@@ -28,45 +28,54 @@ export default function ConversationPage() {
     if (!currentUser || !conversationId) return;
 
     const convRef = doc(db, "conversations", conversationId);
-    const unsubscribe = onSnapshot(convRef, async (doc) => {
-      if (doc.exists()) {
-        const convData = { id: doc.id, ...doc.data() } as Conversation;
+    let unsubscribe: () => void = () => {};
 
-        if (!convData.participantIds.includes(currentUser.uid)) {
-          toast({ variant: "destructive", title: "Unauthorized", description: "You are not part of this conversation." });
+    const fetchInitialData = async () => {
+      try {
+        const docSnap = await getDoc(convRef);
+        if (docSnap.exists()) {
+          const convData = { id: docSnap.id, ...docSnap.data() } as Conversation;
+
+          if (!convData.participantIds.includes(currentUser.uid)) {
+            toast({ variant: "destructive", title: "Unauthorized", description: "You are not part of this conversation." });
+            router.push('/chat');
+            return;
+          }
+
+          const participants = await Promise.all(
+            convData.participantIds.map(async (id) => {
+              const userDocSnap = await getDoc(doc(db, "users", id));
+              return userDocSnap.exists() ? (userDocSnap.data() as User) : null;
+            })
+          );
+          convData.participants = participants.filter(p => p !== null) as User[];
+          
+          setConversation(convData);
+
+          // Now, set up the real-time listener only for updates
+          unsubscribe = onSnapshot(convRef, (doc) => {
+            if (doc.exists()) {
+               setConversation(prev => prev ? { ...prev, messages: doc.data().messages, lastMessage: doc.data().lastMessage } : null);
+            }
+          });
+
+        } else {
+          toast({ variant: "destructive", title: "Not Found", description: "This conversation does not exist." });
           router.push('/chat');
-          return;
         }
-
-        try {
-            const participants = await Promise.all(
-              convData.participantIds.map(async (id) => {
-                const userDocSnap = await getDoc(doc(db, "users", id));
-                return userDocSnap.exists() ? (userDocSnap.data() as User) : null;
-              })
-            );
-            convData.participants = participants.filter((p) => p !== null) as User[];
-            
-            setConversation(convData);
-        } catch(e) {
-            console.error("Error fetching participants", e);
-            toast({ variant: "destructive", title: "Error", description: "Could not load participant details." });
-        } finally {
-             setLoading(false);
-        }
-
-      } else {
-        toast({ variant: "destructive", title: "Not Found", description: "This conversation does not exist." });
-        router.push('/chat');
+      } catch (e) {
+        console.error("Error fetching conversation", e);
+        toast({ variant: "destructive", title: "Error", description: "Could not load the conversation." });
+      } finally {
         setLoading(false);
       }
-    }, (error) => {
-        console.error("Error in conversation snapshot listener:", error);
-        toast({ variant: "destructive", title: "Error", description: "There was an error loading the conversation." });
-        setLoading(false);
-    });
+    };
+    
+    fetchInitialData();
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [currentUser, conversationId, router, toast]);
 
   const appUser = React.useMemo(() => {
