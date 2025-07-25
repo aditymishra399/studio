@@ -2,6 +2,7 @@
 import type { Conversation, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatDistanceToNow, format } from 'date-fns';
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -22,13 +23,30 @@ export default function ConversationItem({
 
   if (!otherParticipant) return null;
 
+  const formatTimestamp = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    try {
+        // if today, show time, else show day name or date
+        const now = new Date();
+        if (now.toDateString() === date.toDateString()) {
+            return format(date, 'p');
+        }
+        return formatDistanceToNow(date, { addSuffix: true });
+    } catch(e) {
+        return '';
+    }
+  }
+  
+  const unreadCount = 0; // Placeholder for unread count logic
+
   return (
     <button
       onClick={onSelect}
       className={cn(
-        "flex items-center w-full text-left gap-3 p-3 rounded-lg transition-colors",
+        "flex items-start w-full text-left gap-4 p-3 rounded-lg transition-colors",
         isSelected
-          ? "bg-primary/10 text-primary"
+          ? "bg-primary/10"
           : "hover:bg-muted"
       )}
     >
@@ -38,11 +56,23 @@ export default function ConversationItem({
           {otherParticipant.name?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
-      <div className="flex-1 overflow-hidden">
-        <p className="font-semibold truncate">{otherParticipant.name}</p>
-        <p className={cn("text-sm truncate", isSelected ? 'text-primary/80' : 'text-muted-foreground')}>
-          {conversation.lastMessage?.content || "No messages yet"}
-        </p>
+      <div className="flex-1 overflow-hidden border-b pb-3">
+        <div className="flex justify-between items-center">
+            <p className="font-semibold truncate text-base">{otherParticipant.name}</p>
+            <p className={cn("text-xs", unreadCount > 0 ? "text-primary font-bold" : "text-muted-foreground")}>
+              {formatTimestamp(conversation.lastMessage?.timestamp)}
+            </p>
+        </div>
+        <div className="flex justify-between items-start">
+            <p className={cn("text-sm truncate text-muted-foreground", isSelected ? 'text-primary/90' : 'text-muted-foreground')}>
+            {conversation.lastMessage?.content || "No messages yet"}
+            </p>
+            {unreadCount > 0 && (
+                <span className="flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 font-bold">
+                    {unreadCount}
+                </span>
+            )}
+        </div>
       </div>
     </button>
   );

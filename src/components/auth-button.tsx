@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Search } from "lucide-react";
 
 
 export default function AuthButton() {
@@ -29,7 +29,10 @@ export default function AuthButton() {
   if (loading) return null;
 
   return user ? (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
+       <Button variant="ghost" size="icon">
+         <Search className="w-5 h-5"/>
+       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">

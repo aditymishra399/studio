@@ -2,20 +2,22 @@
 "use client";
 
 import * as React from "react";
-import type { Conversation, Message, User } from "@/lib/types";
-import ChatSidebar from "@/components/chat-sidebar";
-import ChatPanel from "@/components/chat-panel";
+import type { Conversation, User } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { getConversations, sendMessage, createConversation, findExistingConversation, getAllUsers } from "@/services/firestore";
+import ConversationList from "@/components/conversation-list";
+import { Button } from "@/components/ui/button";
+import { MessageSquarePlus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import ChatPanel from "@/components/chat-panel";
 
 export default function ChatPage() {
   const { user: currentUser } = useAuth();
   const [conversations, setConversations] = React.useState<Conversation[]>([]);
   const [allUsers, setAllUsers] = React.useState<User[]>([]);
-  const [selectedConversation, setSelectedConversation] = React.useState<Conversation | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState<User[]>([]);
+  const [selectedConversationId, setSelectedConversationId] = React.useState<string | null>(null);
+  const router = useRouter();
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -47,6 +49,8 @@ export default function ChatPage() {
   }
 
   const appUser = mapAuthUserToAppUser(currentUser);
+  
+  const selectedConversation = conversations.find(c => c.id === selectedConversationId) || null;
 
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !appUser) return;
@@ -64,21 +68,25 @@ export default function ChatPage() {
   };
 
   const handleSelectConversation = (conversation: Conversation) => {
-    setSelectedConversation(conversation);
+    // We will render the chat panel as a separate page now
+    // For now, we will just log this.
+    console.log("Selected conversation", conversation.id)
+    // A better approach would be to navigate to /chat/[id]
   }
 
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    if (query.trim() === '' || !appUser) {
-        setSearchResults([]);
-        return;
+  const handleCreateNewChat = () => {
+    // This could open a modal to select a user, or navigate to a new page
+    // For now, let's just log it
+    console.log("Create new chat");
+    // A simple implementation could be to pick a random user to chat with
+    if (appUser) {
+        const otherUsers = allUsers.filter(u => u.id !== appUser.id);
+        if (otherUsers.length > 0) {
+            handleSelectUserFromSearch(otherUsers[Math.floor(Math.random() * otherUsers.length)]);
+        }
     }
-    const results = allUsers.filter(u =>
-        u.name?.toLowerCase().includes(query.toLowerCase()) && u.id !== appUser.id
-    );
-    setSearchResults(results);
-  };
-  
+  }
+
   const handleSelectUserFromSearch = async (user: User) => {
     if (!appUser) return;
     
@@ -88,32 +96,34 @@ export default function ChatPage() {
         handleSelectConversation(existingConversation);
     } else {
         const newConversation = await createConversation(appUser, user);
-        // The listener will pick up the new conversation, so we just need to select it.
-        // To make it feel faster, we can manually add it to the state.
         setConversations(prev => [...prev, newConversation]);
         handleSelectConversation(newConversation);
     }
-    setSearchQuery('');
-    setSearchResults([]);
   };
+  
+  const populatedConversations = conversations.map(convo => {
+    const otherParticipants = convo.participants?.filter(u => u.id !== appUser?.id);
+    return { ...convo, participants: otherParticipants || [] };
+  });
+
 
   return (
-    <div className="flex h-screen w-full antialiased text-foreground bg-background">
-      {appUser && <ChatSidebar
-        conversations={conversations}
-        selectedConversation={selectedConversation}
-        onSelectConversation={handleSelectConversation}
-        currentUser={appUser}
-        searchQuery={searchQuery}
-        searchResults={searchResults}
-        onSearchChange={handleSearchChange}
-        onSelectUser={handleSelectUserFromSearch}
-      />}
-      {appUser && <ChatPanel
-        conversation={selectedConversation}
-        onSendMessage={handleSendMessage}
-        currentUser={appUser}
-      />}
+    <div className="relative h-full">
+        {appUser && (
+        <>
+            <ConversationList
+                conversations={populatedConversations}
+                selectedConversation={selectedConversation}
+                onSelectConversation={handleSelectConversation}
+                currentUser={appUser}
+            />
+            <div className="fixed bottom-24 right-4">
+                <Button size="icon" className="rounded-full h-14 w-14 shadow-lg" onClick={handleCreateNewChat}>
+                    <MessageSquarePlus className="h-6 w-6" />
+                </Button>
+            </div>
+        </>
+        )}
     </div>
   );
 }

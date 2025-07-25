@@ -17,8 +17,8 @@ export default function ConversationList({
 }: ConversationListProps) {
   if (conversations.length === 0) {
     return (
-      <div className="p-4 text-center text-sm text-muted-foreground">
-        No conversations yet. Start one by searching for a friend.
+      <div className="p-4 text-center text-sm text-muted-foreground h-full flex items-center justify-center">
+        No conversations yet. Start one by clicking the new chat button.
       </div>
     );
   }
