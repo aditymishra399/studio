@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BotMessageSquare, Upload, User, Mail, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -20,6 +21,7 @@ export default function SignUpPage() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const { signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -31,6 +33,23 @@ export default function SignUpPage() {
       setPhotoPreview(URL.createObjectURL(file));
     }
   };
+
+  useEffect(() => {
+    if (email.includes('@')) {
+      const emailName = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+      if (emailName) {
+        setSuggestions([
+          emailName,
+          `${emailName}${Math.floor(Math.random() * 90) + 10}`,
+          `${emailName}_dev`
+        ]);
+      } else {
+        setSuggestions([]);
+      }
+    } else {
+      setSuggestions([]);
+    }
+  }, [email]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,22 +101,6 @@ export default function SignUpPage() {
                 </Button>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Username</Label>
-              <div className="relative">
-                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
                <div className="relative">
                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -112,6 +115,37 @@ export default function SignUpPage() {
                   className="pl-10"
                 />
               </div>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="name">Username</Label>
+              <div className="relative">
+                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="pl-10"
+                />
+              </div>
+               {suggestions.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground mr-2">Suggestions:</span>
+                  {suggestions.map(s => (
+                     <Badge 
+                        key={s} 
+                        variant="outline" 
+                        className="cursor-pointer"
+                        onClick={() => setName(s)}
+                      >
+                       {s}
+                     </Badge>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

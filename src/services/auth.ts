@@ -9,7 +9,7 @@ import {
   User
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { createUserProfile, updateUserDocument } from "./firestore";
+import { createUserProfile, updateUserDocument, isUsernameTaken } from "./firestore";
 
 export async function signInWithEmailAndPassword(email: string, password: string): Promise<void> {
   try {
@@ -36,6 +36,11 @@ export async function createUserWithEmailAndPassword(email: string, password: st
     throw new Error("Please use a valid email provider (e.g., Gmail, Outlook, etc.). Disposable email addresses are not allowed.");
   }
 
+  const usernameExists = await isUsernameTaken(name);
+  if (usernameExists) {
+    throw new Error("Username is already taken. Please choose another one.");
+  }
+
   try {
     const userCredential = await firebaseSignUp(auth, email, password);
     const user = userCredential.user;
@@ -57,12 +62,11 @@ export async function createUserWithEmailAndPassword(email: string, password: st
 
   } catch (error: any) {
     console.error("Error signing up:", error);
-    // If the error is the one we threw, re-throw it. Otherwise, use the firebase error message.
-    if (allowedDomains.includes(email.split('@')[1]?.toLowerCase())) {
-         throw new Error(error.message || "Failed to sign up.");
-    } else {
+    // If the error is one of our custom ones, re-throw it. Otherwise, use the firebase error message.
+    if (error.message.startsWith("Username is already taken") || error.message.startsWith("Please use a valid email provider")) {
         throw error;
     }
+    throw new Error(error.message || "Failed to sign up.");
   }
 }
 

@@ -30,6 +30,15 @@ export const createUserProfile = async (uid: string, name: string, email: string
     });
 };
 
+// Check if a username is already taken
+export const isUsernameTaken = async (name: string): Promise<boolean> => {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("name", "==", name));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+};
+
+
 // Update a user profile document in Firestore
 export const updateUserDocument = async (uid: string, data: Partial<User>) => {
     const userRef = doc(db, "users", uid);
