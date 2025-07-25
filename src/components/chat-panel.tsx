@@ -9,7 +9,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 
 
 interface ChatPanelProps {
-  conversation: Conversation | null;
+  conversation: Conversation;
   onSendMessage: (content: string) => void;
   currentUser: User;
 }
@@ -22,17 +22,21 @@ export default function ChatPanel({
   const [currentConversation, setCurrentConversation] = React.useState(conversation);
 
   React.useEffect(() => {
-    if (conversation?.id) {
-      const unsub = onSnapshot(doc(db, "conversations", conversation.id), (doc) => {
-        if (doc.exists()) {
-           const convData = { id: doc.id, ...doc.data() } as Conversation;
-            // Get participants data from initial conversation prop
-           const participants = conversation.participants;
-           setCurrentConversation({ ...convData, participants });
-        }
-      });
-      return () => unsub();
-    }
+    // When the conversation prop changes, update the state
+    setCurrentConversation(conversation);
+
+    // Set up the real-time listener
+    const unsub = onSnapshot(doc(db, "conversations", conversation.id), (doc) => {
+      if (doc.exists()) {
+         const convData = { id: doc.id, ...doc.data() } as Conversation;
+          // Important: Preserve the participants data from the initial prop
+          // as it's not stored directly in the conversation document.
+         setCurrentConversation({ ...convData, participants: conversation.participants });
+      }
+    });
+
+    // Cleanup listener on component unmount or when conversation changes
+    return () => unsub();
   }, [conversation]);
 
 
@@ -55,7 +59,7 @@ export default function ChatPanel({
   );
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
+    <div className="flex flex-col h-screen">
       <ChatHeader user={otherParticipant} />
       <MessageList
         messages={currentConversation.messages || []}

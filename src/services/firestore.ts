@@ -64,7 +64,8 @@ export const getAllUsers = (callback: (users: User[]) => void) => {
 export const getConversations = (userId: string, callback: (conversations: Conversation[]) => void) => {
   const q = query(
     collection(db, "conversations"),
-    where("participantIds", "array-contains", userId)
+    where("participantIds", "array-contains", userId),
+    orderBy("lastMessage.timestamp", "desc")
   );
 
   const unsubscribe = onSnapshot(q, async (querySnapshot) => {
@@ -92,10 +93,10 @@ export const getConversations = (userId: string, callback: (conversations: Conve
 export const sendMessage = async (conversationId: string, senderId: string, content: string) => {
   const conversationRef = doc(db, "conversations", conversationId);
   const messageData = {
-    id: new Date().toISOString(), // simple unique id
+    id: doc(collection(db, "tmp")).id, // Generate a unique ID for the message
     senderId,
     content,
-    timestamp: new Date(),
+    timestamp: new Date(), // Use a client-side date object
   };
 
   await updateDoc(conversationRef, {
@@ -132,7 +133,8 @@ export const findExistingConversation = async (currentUserId: string, otherUserI
     
     const q = query(
         conversationsRef, 
-        where("participantIds", "==", sortedIds)
+        where("participantIds", "==", sortedIds),
+        limit(1)
     );
     
     const querySnapshot = await getDocs(q);

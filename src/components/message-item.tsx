@@ -17,7 +17,9 @@ export default function MessageItem({ message, isCurrentUser, sender }: MessageI
 
   React.useEffect(() => {
     if (message.timestamp) {
-       const date = (message.timestamp as any).toDate ? (message.timestamp as any).toDate() : new Date(message.timestamp);
+       // Firebase timestamps can be objects or seconds/nanoseconds.
+       // This handles converting it to a JS Date object safely.
+       const date = (message.timestamp as any).toDate ? (message.timestamp as any).toDate() : new Date();
        if (date instanceof Date && !isNaN(date.valueOf())) {
          setFormattedTimestamp(format(date, "p"));
        }
@@ -25,6 +27,7 @@ export default function MessageItem({ message, isCurrentUser, sender }: MessageI
   }, [message.timestamp]);
   
   if (!sender) {
+    // Return a placeholder or null if sender info isn't available yet
     return null;
   }
 

@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { doc, onSnapshot, getDoc as getFirestoreDoc } from "firebase/firestore";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -41,7 +41,7 @@ export default function ConversationPage() {
         try {
             const participants = await Promise.all(
               convData.participantIds.map(async (id) => {
-                const userDocSnap = await getFirestoreDoc(doc(db, "users", id));
+                const userDocSnap = await getDoc(doc(db, "users", id));
                 return userDocSnap.exists() ? (userDocSnap.data() as User) : null;
               })
             );
@@ -51,12 +51,14 @@ export default function ConversationPage() {
         } catch(e) {
             console.error("Error fetching participants", e);
             toast({ variant: "destructive", title: "Error", description: "Could not load participant details." });
+        } finally {
+             setLoading(false);
         }
 
-        setLoading(false);
       } else {
         toast({ variant: "destructive", title: "Not Found", description: "This conversation does not exist." });
         router.push('/chat');
+        setLoading(false);
       }
     }, (error) => {
         console.error("Error in conversation snapshot listener:", error);
@@ -69,6 +71,8 @@ export default function ConversationPage() {
 
   const appUser = React.useMemo(() => {
     if (!currentUser || !conversation) return undefined;
+    // The user object on `currentUser` might be from auth, not firestore.
+    // We find the full user profile from the conversation's participants list.
     return conversation.participants.find(p => p.id === currentUser.uid);
   }, [currentUser, conversation]);
 
@@ -95,12 +99,8 @@ export default function ConversationPage() {
                   <Skeleton className="h-10 w-10 rounded-full" />
                   <Skeleton className="h-6 w-32" />
               </div>
-              <div className="flex items-center gap-2">
-                  <Skeleton className="h-8 w-8" />
-                   <Skeleton className="h-8 w-8" />
-              </div>
           </div>
-          <div className="flex-1 p-6 space-y-6">
+          <div className="flex-1 p-6 space-y-6 overflow-y-auto">
               <div className="flex items-end gap-3 justify-start">
                   <Skeleton className="w-8 h-8 rounded-full" />
                   <Skeleton className="w-48 h-12 rounded-2xl" />
@@ -113,7 +113,7 @@ export default function ConversationPage() {
                   <Skeleton className="w-32 h-12 rounded-2xl" />
               </div>
           </div>
-          <div className="p-4 border-t bg-card">
+          <div className="p-4 border-t bg-card mt-auto">
               <Skeleton className="h-12 w-full" />
           </div>
       </div>
@@ -121,7 +121,9 @@ export default function ConversationPage() {
   }
 
   if (!conversation || !appUser) {
-    return null; // Or some other error state
+    // This can happen briefly or if there's an error.
+    // A more specific error message could be shown here based on why it failed.
+    return null;
   }
 
   return (
