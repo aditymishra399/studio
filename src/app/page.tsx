@@ -1,94 +1,73 @@
-"use client";
 
-import * as React from "react";
-import { conversations as initialConversations, users } from "@/lib/data";
-import type { Conversation, Message } from "@/lib/types";
-import ChatSidebar from "@/components/chat-sidebar";
-import ChatPanel from "@/components/chat-panel";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { BotMessageSquare, ShieldCheck, Zap } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
-  const [conversations, setConversations] =
-    React.useState<Conversation[]>(initialConversations);
-  const [selectedConversation, setSelectedConversation] =
-    React.useState<Conversation | null>(conversations[0] || null);
-  const { toast } = useToast();
-  const currentUser = users[0];
-
-  const handleSendMessage = (content: string) => {
-    if (!selectedConversation) return;
-
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      sender: currentUser,
-      content,
-      timestamp: new Date().toISOString(),
-    };
-
-    const updatedConversations = conversations.map((convo) => {
-      if (convo.id === selectedConversation.id) {
-        return {
-          ...convo,
-          messages: [...convo.messages, newMessage],
-        };
-      }
-      return convo;
-    });
-
-    setConversations(updatedConversations);
-    setSelectedConversation(
-      updatedConversations.find((c) => c.id === selectedConversation.id) || null
-    );
-
-    // Simulate a reply
-    setTimeout(() => {
-      const otherUser = selectedConversation.participants.find(
-        (p) => p.id !== currentUser.id
-      );
-      if (otherUser) {
-        const replyMessage: Message = {
-          id: `msg-${Date.now() + 1}`,
-          sender: otherUser,
-          content: "Got it, thanks!",
-          timestamp: new Date().toISOString(),
-        };
-
-        const finalConversations = updatedConversations.map((convo) => {
-          if (convo.id === selectedConversation.id) {
-            return {
-              ...convo,
-              messages: [...convo.messages, replyMessage],
-            };
-          }
-          return convo;
-        });
-
-        setConversations(finalConversations);
-        setSelectedConversation(
-          finalConversations.find((c) => c.id === selectedConversation.id) ||
-            null
-        );
-        toast({
-          title: `New message from ${otherUser.name}`,
-          description: replyMessage.content,
-        });
-      }
-    }, 1500);
-  };
-
   return (
-    <div className="flex h-screen w-full antialiased text-foreground bg-background">
-      <ChatSidebar
-        conversations={conversations}
-        selectedConversation={selectedConversation}
-        onSelectConversation={setSelectedConversation}
-        currentUser={currentUser}
-      />
-      <ChatPanel
-        conversation={selectedConversation}
-        onSendMessage={handleSendMessage}
-        currentUser={currentUser}
-      />
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="p-4 border-b">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <BotMessageSquare className="w-8 h-8 text-primary" />
+            <h1 className="text-2xl font-bold tracking-tight">WhisperText</h1>
+          </div>
+          <nav className="flex items-center gap-4">
+            <Link href="/chat">
+              <Button>Go to Chat</Button>
+            </Link>
+          </nav>
+        </div>
+      </header>
+      <main className="flex-1">
+        <section className="py-20 md:py-32">
+          <div className="container mx-auto text-center">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">
+              Secure & Private Messaging
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              WhisperText uses advanced AI to ensure your conversations are
+              safe, redacting sensitive information before it's ever sent.
+            </p>
+            <Link href="/chat">
+              <Button size="lg">Start Whispering</Button>
+            </Link>
+          </div>
+        </section>
+        <section className="py-20 md:py-32 bg-card border-y">
+          <div className="container mx-auto grid md:grid-cols-3 gap-12 text-center">
+            <div className="flex flex-col items-center">
+              <ShieldCheck className="w-12 h-12 text-primary mb-4" />
+              <h3 className="text-2xl font-bold mb-2">Privacy First</h3>
+              <p className="text-muted-foreground">
+                Your conversations are scanned for sensitive data which you can
+                redact with a single click.
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <BotMessageSquare className="w-12 h-12 text-primary mb-4" />
+              <h3 className="text-2xl font-bold mb-2">AI-Powered</h3>
+              <p className="text-muted-foreground">
+                Leverages state-of-the-art AI to detect a wide range of
+                sensitive information patterns.
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <Zap className="w-12 h-12 text-primary mb-4" />
+              <h3 className="text-2xl font-bold mb-2">Lightning Fast</h3>
+              <p className="text-muted-foreground">
+                Real-time redaction suggestions without slowing down your
+                messaging experience.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer className="p-4 border-t">
+        <div className="container mx-auto text-center text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} WhisperText. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
