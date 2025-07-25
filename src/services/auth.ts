@@ -21,6 +21,21 @@ export async function signInWithEmailAndPassword(email: string, password: string
 }
 
 export async function createUserWithEmailAndPassword(email: string, password: string, name: string, photo: File | null): Promise<void> {
+  const allowedDomains = [
+    "gmail.com",
+    "hotmail.com",
+    "protonmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "aol.com",
+    "icloud.com"
+  ];
+  const emailDomain = email.split('@')[1];
+
+  if (!emailDomain || !allowedDomains.includes(emailDomain.toLowerCase())) {
+    throw new Error("Please use a valid email provider (e.g., Gmail, Outlook, etc.). Disposable email addresses are not allowed.");
+  }
+
   try {
     const userCredential = await firebaseSignUp(auth, email, password);
     const user = userCredential.user;
@@ -42,7 +57,12 @@ export async function createUserWithEmailAndPassword(email: string, password: st
 
   } catch (error: any) {
     console.error("Error signing up:", error);
-    throw new Error(error.message || "Failed to sign up.");
+    // If the error is the one we threw, re-throw it. Otherwise, use the firebase error message.
+    if (allowedDomains.includes(email.split('@')[1]?.toLowerCase())) {
+         throw new Error(error.message || "Failed to sign up.");
+    } else {
+        throw error;
+    }
   }
 }
 
