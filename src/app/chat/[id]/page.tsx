@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { doc, onSnapshot, getDoc as getFirestoreDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
+import { doc, onSnapshot, getDoc as getFirestoreDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -38,14 +38,11 @@ export default function ConversationPage() {
           return;
         }
 
-        // To keep things simple and avoid nested async calls in listeners,
-        // we'll fetch participants once, or pass them down as props if available.
-        // For this implementation, we will fetch them.
         try {
             const participants = await Promise.all(
               convData.participantIds.map(async (id) => {
-                const userDoc = await getFirestoreDoc(doc(db, "users", id));
-                return userDoc.exists() ? (userDoc.data() as User) : null;
+                const userDocSnap = await getFirestoreDoc(doc(db, "users", id));
+                return userDocSnap.exists() ? (userDocSnap.data() as User) : null;
               })
             );
             convData.participants = participants.filter((p) => p !== null) as User[];
