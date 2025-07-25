@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { BotMessageSquare, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
+import AuthButton from "@/components/auth-button";
 
 export default function Home() {
   return (
@@ -12,9 +13,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold tracking-tight">Silent Line</h1>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/chat">
-              <Button>Go to Chat</Button>
-            </Link>
+            <AuthButton />
           </nav>
         </div>
       </header>
