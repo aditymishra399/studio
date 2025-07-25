@@ -13,10 +13,36 @@ import {
   updateDoc,
   arrayUnion,
   limit,
-  getDocs
+  getDocs,
+  setDoc
 } from "firebase/firestore";
 import type { Conversation, Message, User } from "@/lib/types";
-import { users } from "@/lib/data";
+
+
+// Create a user profile document in Firestore
+export const createUserProfile = async (uid: string, name: string, email: string, avatarUrl: string) => {
+    const userRef = doc(db, "users", uid);
+    await setDoc(userRef, {
+        id: uid,
+        name,
+        email,
+        avatarUrl
+    });
+};
+
+// Fetch all users for discovery (you might want to paginate this in a real app)
+export const getAllUsers = (callback: (users: User[]) => void) => {
+    const q = query(collection(db, "users"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const users: User[] = [];
+        querySnapshot.forEach((doc) => {
+            users.push(doc.data() as User);
+        });
+        callback(users);
+    });
+    return unsubscribe;
+}
+
 
 // Get all conversations for a user
 export const getConversations = (userId: string, callback: (conversations: Conversation[]) => void) => {
@@ -25,11 +51,21 @@ export const getConversations = (userId: string, callback: (conversations: Conve
     where("participantIds", "array-contains", userId)
   );
 
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  const unsubscribe = onSnapshot(q, async (querySnapshot) => {
     const conversations: Conversation[] = [];
-    querySnapshot.forEach((doc) => {
-      conversations.push({ id: doc.id, ...doc.data() } as Conversation);
-    });
+    for (const docSnapshot of querySnapshot.docs) {
+      const conversationData = { id: docSnapshot.id, ...docSnapshot.data() } as Conversation;
+      
+      const participants = await Promise.all(
+        conversationData.participantIds.map(async (id) => {
+          const userDoc = await getDoc(doc(db, "users", id));
+          return userDoc.exists() ? userDoc.data() as User : null;
+        })
+      );
+
+      conversationData.participants = participants.filter(p => p !== null) as User[];
+      conversations.push(conversationData);
+    }
     callback(conversations);
   });
 
@@ -56,7 +92,7 @@ export const createConversation = async (currentUser: User, otherUser: User): Pr
     const conversationRef = collection(db, "conversations");
     
     const newConversationData = {
-        participantIds: [currentUser.id, otherUser.id],
+        participantIds: [currentUser.id, otherUser.id].sort(),
         messages: [],
         lastMessage: null,
         createdAt: serverTimestamp(),
@@ -76,35 +112,28 @@ export const createConversation = async (currentUser: User, otherUser: User): Pr
 
 export const findExistingConversation = async (currentUserId: string, otherUserId: string): Promise<Conversation | null> => {
     const conversationsRef = collection(db, "conversations");
-    // This query looks for conversations where both users are participants.
+    const sortedIds = [currentUserId, otherUserId].sort();
+    
     const q = query(
         conversationsRef, 
-        where("participantIds", "==", [currentUserId, otherUserId])
+        where("participantIds", "==", sortedIds)
     );
-    const q2 = query(
-        conversationsRef,
-        where("participantIds", "==", [otherUserId, currentUserId])
-    );
-
+    
     const querySnapshot = await getDocs(q);
-    const querySnapshot2 = await getDocs(q2);
 
     let foundConversation: Conversation | null = null;
     
     if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        foundConversation = { id: doc.id, ...doc.data() } as Conversation;
-    } else if (!querySnapshot2.empty) {
-        const doc = querySnapshot2.docs[0];
-        foundConversation = { id: doc.id, ...doc.data() } as Conversation;
-    }
-    
-    if (foundConversation) {
-         const participants = foundConversation.participantIds.map(id => {
-            return users.find(u => u.id === id);
-        }).filter(u => u) as User[];
-        return { ...foundConversation, participants };
+        const docSnapshot = querySnapshot.docs[0];
+        foundConversation = { id: docSnapshot.id, ...docSnapshot.data() } as Conversation;
+         const participants = await Promise.all(
+            foundConversation.participantIds.map(async (id) => {
+                const userDoc = await getDoc(doc(db, "users", id));
+                return userDoc.exists() ? userDoc.data() as User : null;
+            })
+        );
+        foundConversation.participants = participants.filter(u => u) as User[];
     }
 
-    return null;
+    return foundConversation;
 }

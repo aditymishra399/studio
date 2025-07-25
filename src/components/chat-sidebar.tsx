@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BotMessageSquare, LogOut, Search } from "lucide-react";
 import ConversationList from "./conversation-list";
-import { users } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
@@ -43,11 +42,9 @@ export default function ChatSidebar({
   };
   
   const populatedConversations = conversations.map(convo => {
-    const participants = convo.participantIds.map(id => {
-      return users.find(u => u.id === id) || { id, name: "Unknown", avatarUrl: "" }
-    }).filter(u => u.id !== currentUser.id) as User[];
-    return { ...convo, participants };
-  })
+    const otherParticipants = convo.participants?.filter(u => u.id !== currentUser.id);
+    return { ...convo, participants: otherParticipants || [] };
+  });
 
   return (
     <div className="hidden md:flex flex-col w-80 max-w-xs min-w-80 h-full bg-card border-r">

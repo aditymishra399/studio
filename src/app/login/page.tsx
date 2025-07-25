@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { BotMessageSquare } from "lucide-react";
+import { sendPasswordResetEmail } from "@/services/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -33,6 +34,30 @@ export default function LoginPage() {
         description: error.message || "An unexpected error occurred.",
       });
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Email required",
+        description: "Please enter your email address to reset your password.",
+      });
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(email);
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your inbox for a link to reset your password.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Password Reset Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
     }
   };
 
@@ -64,7 +89,12 @@ export default function LoginPage() {
               />
             </div>
             <div className="grid gap-2">
+              <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
+                <button type="button" onClick={handlePasswordReset} className="ml-auto inline-block text-sm underline">
+                  Forgot your password?
+                </button>
+              </div>
               <Input
                 id="password"
                 type="password"

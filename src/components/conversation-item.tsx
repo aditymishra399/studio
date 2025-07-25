@@ -1,3 +1,4 @@
+
 import type { Conversation, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,9 +33,9 @@ export default function ConversationItem({
       )}
     >
       <Avatar className="w-12 h-12">
-        <AvatarImage src={otherParticipant.avatarUrl} alt={otherParticipant.name} data-ai-hint="person avatar" />
+        <AvatarImage src={otherParticipant.avatarUrl} alt={otherParticipant.name || ""} data-ai-hint="person avatar" />
         <AvatarFallback>
-          {otherParticipant.name.charAt(0).toUpperCase()}
+          {otherParticipant.name?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 overflow-hidden">
