@@ -33,21 +33,13 @@ export default function Home() {
           </div>
         </section>
         <section className="py-20 md:py-32 bg-card border-y">
-          <div className="container mx-auto grid md:grid-cols-3 gap-12 text-center">
+          <div className="container mx-auto grid md:grid-cols-2 gap-12 text-center">
             <div className="flex flex-col items-center">
               <ShieldCheck className="w-12 h-12 text-primary mb-4" />
               <h3 className="text-2xl font-bold mb-2">Privacy First</h3>
               <p className="text-muted-foreground">
                 Your conversations are scanned for sensitive data which you can
                 redact with a single click.
-              </p>
-            </div>
-            <div className="flex flex-col items-center">
-              <BotMessageSquare className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-2xl font-bold mb-2">AI-Powered</h3>
-              <p className="text-muted-foreground">
-                Leverages state-of-the-art AI to detect a wide range of
-                sensitive information patterns.
               </p>
             </div>
             <div className="flex flex-col items-center">
