@@ -65,8 +65,10 @@ export const getAllUsers = (callback: (users: User[]) => void) => {
 export const getConversations = (userId: string, callback: (conversations: Conversation[]) => void) => {
   const q = query(
     collection(db, "conversations"),
-    where("participantIds", "array-contains", userId),
-    orderBy("lastMessage.timestamp", "desc")
+    where("participantIds", "array-contains", userId)
+    // The orderBy clause is removed to prevent the composite index error.
+    // We will sort the results on the client side.
+    // orderBy("lastMessage.timestamp", "desc")
   );
 
   const unsubscribe = onSnapshot(q, async (querySnapshot) => {
@@ -84,6 +86,14 @@ export const getConversations = (userId: string, callback: (conversations: Conve
       conversationData.participants = participants.filter(p => p !== null) as User[];
       conversations.push(conversationData);
     }
+    
+    // Sort conversations by last message timestamp on the client side
+    conversations.sort((a, b) => {
+      const dateA = a.lastMessage?.timestamp?.toDate ? a.lastMessage.timestamp.toDate() : new Date(0);
+      const dateB = b.lastMessage?.timestamp?.toDate ? b.lastMessage.timestamp.toDate() : new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
     callback(conversations);
   });
 
