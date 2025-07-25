@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Fingerprint, Upload, User, Mail, ShieldCheck, LogOut } from "lucide-react";
+import { Upload, User, Mail, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateUserProfile } from "@/services/auth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
   const { user, loading, signOut } = useAuth();
@@ -77,28 +78,28 @@ export default function ProfilePage() {
          <div className="flex items-center justify-center min-h-screen bg-background">
           <Card className="w-full max-w-md animate-pulse m-4">
             <CardHeader className="text-center space-y-4">
-              <div className="h-6 w-32 bg-muted rounded-md mx-auto" />
-              <div className="h-4 w-48 bg-muted rounded-md mx-auto" />
+              <Skeleton className="h-6 w-32 bg-muted rounded-md mx-auto" />
+              <Skeleton className="h-4 w-48 bg-muted rounded-md mx-auto" />
             </CardHeader>
             <CardContent>
                <div className="space-y-4">
                 <div className="space-y-2 flex flex-col items-center">
                     <Skeleton className="h-24 w-24 rounded-full mb-2 bg-muted"></Skeleton>
-                    <div className="h-8 w-28 bg-muted rounded-md" />
+                    <Skeleton className="h-8 w-28 bg-muted rounded-md" />
                 </div>
                 <div className="space-y-2">
-                    <div className="h-5 w-20 bg-muted rounded-md" />
-                    <div className="h-10 w-full bg-muted rounded-md" />
+                    <Skeleton className="h-5 w-20 bg-muted rounded-md" />
+                    <Skeleton className="h-10 w-full bg-muted rounded-md" />
                 </div>
                 <div className="space-y-2">
-                   <div className="h-5 w-20 bg-muted rounded-md" />
-                    <div className="h-10 w-full bg-muted rounded-md" />
+                   <Skeleton className="h-5 w-20 bg-muted rounded-md" />
+                    <Skeleton className="h-10 w-full bg-muted rounded-md" />
                 </div>
-                <div className="h-10 w-full bg-muted rounded-md mt-6" />
+                <Skeleton className="h-10 w-full bg-muted rounded-md mt-6" />
               </div>
             </CardContent>
              <CardFooter className="flex-col gap-4">
-               <div className="h-10 w-full bg-muted rounded-md" />
+               <Skeleton className="h-10 w-full bg-muted rounded-md" />
             </CardFooter>
           </Card>
         </div>

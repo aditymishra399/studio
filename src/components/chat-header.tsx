@@ -1,3 +1,4 @@
+
 import type { User } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export default function ChatHeader({ user }: ChatHeaderProps) {
         </Button>
         <Avatar>
           <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person face" />
-          <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <h2 className="text-xl font-bold">{user.name}</h2>
       </div>
