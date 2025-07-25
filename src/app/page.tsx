@@ -37,8 +37,7 @@ export default function Home() {
               <ShieldCheck className="w-12 h-12 text-primary mb-4" />
               <h3 className="text-2xl font-bold mb-2">Privacy First</h3>
               <p className="text-muted-foreground">
-                Your conversations are scanned for sensitive data which you can
-                redact with a single click.
+                We believe that privacy and personal life will have to be maintained together. The world is not useless, we have made it useless.
               </p>
             </div>
             <div className="flex flex-col items-center">
