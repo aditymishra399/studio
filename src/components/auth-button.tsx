@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -13,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { LogOut, Search } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 
 export default function AuthButton() {
@@ -29,14 +30,11 @@ export default function AuthButton() {
 
   return user ? (
     <div className="flex items-center gap-4">
-       <Button variant="ghost" size="icon" onClick={() => router.push('/chat')}>
-          <Search className="w-5 h-5" />
-        </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.photoURL || undefined} alt="User avatar" />
+              <AvatarImage src={user.photoURL || undefined} alt="User avatar" data-ai-hint="person face" />
                <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
           </Button>
@@ -51,6 +49,10 @@ export default function AuthButton() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => router.push('/chat')}>
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
