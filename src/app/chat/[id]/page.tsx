@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, getDoc as getFirestoreDoc, collection, query, where, getDocs, limit } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -32,28 +32,39 @@ export default function ConversationPage() {
       if (doc.exists()) {
         const convData = { id: doc.id, ...doc.data() } as Conversation;
 
-        // Ensure current user is part of the conversation
         if (!convData.participantIds.includes(currentUser.uid)) {
           toast({ variant: "destructive", title: "Unauthorized", description: "You are not part of this conversation." });
           router.push('/chat');
           return;
         }
 
-        // Fetch full participant details
-        const participants = await Promise.all(
-          convData.participantIds.map(async (id) => {
-            const userDoc = await getDoc(doc(db, "users", id));
-            return userDoc.exists() ? (userDoc.data() as User) : null;
-          })
-        );
-        convData.participants = participants.filter((p) => p !== null) as User[];
-        
-        setConversation(convData);
+        // To keep things simple and avoid nested async calls in listeners,
+        // we'll fetch participants once, or pass them down as props if available.
+        // For this implementation, we will fetch them.
+        try {
+            const participants = await Promise.all(
+              convData.participantIds.map(async (id) => {
+                const userDoc = await getFirestoreDoc(doc(db, "users", id));
+                return userDoc.exists() ? (userDoc.data() as User) : null;
+              })
+            );
+            convData.participants = participants.filter((p) => p !== null) as User[];
+            
+            setConversation(convData);
+        } catch(e) {
+            console.error("Error fetching participants", e);
+            toast({ variant: "destructive", title: "Error", description: "Could not load participant details." });
+        }
+
         setLoading(false);
       } else {
         toast({ variant: "destructive", title: "Not Found", description: "This conversation does not exist." });
         router.push('/chat');
       }
+    }, (error) => {
+        console.error("Error in conversation snapshot listener:", error);
+        toast({ variant: "destructive", title: "Error", description: "There was an error loading the conversation." });
+        setLoading(false);
     });
 
     return () => unsubscribe();
@@ -123,42 +134,4 @@ export default function ConversationPage() {
       currentUser={appUser}
     />
   );
-}
-
-// Helper to get doc, since it's not directly available in onSnapshot's callback
-async function getDoc(ref: any) {
-  const doc = await (ref.get ? ref.get() : Promise.resolve({ exists: () => false }));
-  if (doc.exists()) {
-    return doc;
-  }
-  // This is a workaround because the firestore lite SDK used client-side
-  // does not have a `get` method on a `DocumentReference`.
-  // This won't be perfect but will work for hydrating user data.
-  // A proper solution would be to have a separate API route to fetch user data.
-  const querySnapshot = await getDocs(query(collection(db, 'users'), where('id', '==', ref.id), limit(1)));
-  if (!querySnapshot.empty) {
-    return querySnapshot.docs[0];
-  }
-  return { exists: () => false };
-}
-
-async function getDocs(query: any) {
-    const a = await (query.get ? query.get() : Promise.resolve({ docs: [] }));
-    return a;
-}
-
-function query(col: any, ...args: any[]) {
-    return col.where.apply(col, args);
-}
-
-function limit(q: any, l: number) {
-    return q.limit(l);
-}
-
-function collection(db: any, path: string) {
-    return db.collection(path);
-}
-
-function where(...args: any[]) {
-    return args;
 }
