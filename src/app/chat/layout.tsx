@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users, Phone, User as UserIcon, LogOut, Search, Camera, MoreVertical } from "lucide-react";
+import { MessageSquare, Users, Phone, LogOut, Search, Camera, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +30,10 @@ export default function ChatLayout({
     await signOut();
     router.push("/");
   };
+
+  const isChatPage = pathname === '/chat';
+  const isNewChatPage = pathname === '/chat/new';
+  const showBackButton = !isChatPage;
 
 
   if (loading || !user) {
@@ -71,12 +75,21 @@ export default function ChatLayout({
   return (
       <div className="flex flex-col h-screen w-full bg-background text-foreground">
         <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
-            <h1 className="text-2xl font-bold text-primary tracking-tight">SilentLine</h1>
+            <div className="flex items-center gap-4">
+              {showBackButton && (
+                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+              )}
+              <h1 className="text-2xl font-bold text-primary tracking-tight">
+                {isNewChatPage ? 'New Chat' : 'SilentLine'}
+              </h1>
+            </div>
             <div className="flex items-center gap-2">
                  <Button variant="ghost" size="icon">
                     <Camera className="w-5 h-5"/>
                 </Button>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={() => router.push('/chat/new')}>
                     <Search className="w-5 h-5"/>
                 </Button>
                  <Button variant="ghost" size="icon" onClick={() => router.push('/profile')}>
@@ -93,7 +106,7 @@ export default function ChatLayout({
         </main>
         
         <nav className="flex justify-around p-2 border-t bg-background sticky bottom-0">
-            <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname === '/chat' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
+            <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname.startsWith('/chat') ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
                 <MessageSquare className="w-6 h-6"/>
                 <span className="text-xs font-medium">Chats</span>
             </Link>

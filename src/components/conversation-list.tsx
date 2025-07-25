@@ -4,14 +4,12 @@ import ConversationItem from "./conversation-item";
 
 interface ConversationListProps {
   conversations: Conversation[];
-  selectedConversation: Conversation | null;
   onSelectConversation: (conversation: Conversation) => void;
   currentUser: User;
 }
 
 export default function ConversationList({
   conversations,
-  selectedConversation,
   onSelectConversation,
   currentUser,
 }: ConversationListProps) {
@@ -28,7 +26,7 @@ export default function ConversationList({
         <ConversationItem
           key={conversation.id}
           conversation={conversation}
-          isSelected={selectedConversation?.id === conversation.id}
+          isSelected={false} // Selection is handled by navigation now
           onSelect={() => onSelectConversation(conversation)}
           currentUser={currentUser}
         />
