@@ -24,8 +24,7 @@ export default function Home() {
               Secure & Private Messaging
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              SilentLine uses advanced AI to ensure your conversations are
-              safe, redacting sensitive information before it's ever sent.
+              We are all humans, if we don't protect our data then who else will? Let's chat together. And that too is safe.
             </p>
             <Link href="/chat">
               <Button size="lg">Start Secure Chat</Button>
