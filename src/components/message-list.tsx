@@ -10,11 +10,14 @@ interface MessageListProps {
 }
 
 export default function MessageList({ messages, currentUser, participants }: MessageListProps) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    const viewport = scrollViewportRef.current;
+    if (viewport) {
+      setTimeout(() => {
+        viewport.scrollTop = viewport.scrollHeight;
+      }, 0);
     }
   }, [messages]);
 
@@ -23,7 +26,7 @@ export default function MessageList({ messages, currentUser, participants }: Mes
   }
 
   return (
-    <ScrollArea className="flex-1" ref={scrollAreaRef}>
+    <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
       <div className="p-6 space-y-6">
         {messages.map((message) => (
           <MessageItem

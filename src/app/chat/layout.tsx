@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +36,15 @@ export default function ChatLayout({
   const isNewChatPage = pathname === '/chat/new';
   const isProfilePage = pathname === '/chat/profile';
   const showBackButton = !isChatPage && !isProfilePage;
+  const isConversationPage = /^\/chat\/.+/.test(pathname) && !isNewChatPage && !isProfilePage;
+
+  const title = useMemo(() => {
+    if (isNewChatPage) return 'New Chat';
+    if (isProfilePage) return 'Profile';
+    if (isChatPage) return 'SilentLine';
+    if (isConversationPage) return ''; // Title will be handled by the ChatHeader component
+    return 'SilentLine';
+  }, [pathname, isNewChatPage, isProfilePage, isChatPage, isConversationPage]);
 
 
   if (loading || !user) {
@@ -76,27 +85,29 @@ export default function ChatLayout({
 
   return (
       <div className="flex flex-col h-screen w-full bg-background text-foreground">
-        <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
-            <div className="flex items-center gap-4">
-              {showBackButton && (
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
-              )}
-               <h1 className="text-2xl font-bold text-primary tracking-tight">
-                {isNewChatPage ? 'New Chat' : isProfilePage ? 'Profile' : 'SilentLine'}
-               </h1>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => router.push('/chat/new')}>
-                    <Search className="w-5 h-5"/>
-                </Button>
-                 <Avatar className="h-8 w-8">
-                   <AvatarImage src={user.photoURL || undefined} alt="User avatar" data-ai-hint="person face" />
-                    <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
-                 </Avatar>
-            </div>
-        </header>
+        {!isConversationPage && (
+          <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                {showBackButton && (
+                  <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="w-6 h-6" />
+                  </Button>
+                )}
+                 <h1 className="text-2xl font-bold text-primary tracking-tight">
+                  {title}
+                 </h1>
+              </div>
+              <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => router.push('/chat/new')}>
+                      <Search className="w-5 h-5"/>
+                  </Button>
+                   <Avatar className="h-8 w-8">
+                     <AvatarImage src={user.photoURL || undefined} alt="User avatar" data-ai-hint="person face" />
+                      <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                   </Avatar>
+              </div>
+          </header>
+        )}
 
         <main className="flex-1 overflow-y-auto pb-20">
             {children}

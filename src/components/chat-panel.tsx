@@ -22,14 +22,16 @@ export default function ChatPanel({
   );
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-background">
       <ChatHeader user={otherParticipant} />
-      <MessageList
-        messages={conversation.messages || []}
-        currentUser={currentUser}
-        participants={conversation.participants || []}
-      />
-      <MessageInput onSendMessage={onSendMessage} />
+      <div className="flex-1 flex flex-col">
+          <MessageList
+            messages={conversation.messages || []}
+            currentUser={currentUser}
+            participants={conversation.participants || []}
+          />
+          <MessageInput onSendMessage={onSendMessage} />
+      </div>
     </div>
   );
 }
