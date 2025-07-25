@@ -6,9 +6,10 @@ import { useEffect, useRef } from "react";
 interface MessageListProps {
   messages: Message[];
   currentUser: User;
+  participants: User[];
 }
 
-export default function MessageList({ messages, currentUser }: MessageListProps) {
+export default function MessageList({ messages, currentUser, participants }: MessageListProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,6 +18,10 @@ export default function MessageList({ messages, currentUser }: MessageListProps)
     }
   }, [messages]);
 
+  const getSender = (senderId: string) => {
+    return participants.find(p => p.id === senderId);
+  }
+
   return (
     <ScrollArea className="flex-1" ref={scrollAreaRef}>
       <div className="p-6 space-y-6">
@@ -24,7 +29,8 @@ export default function MessageList({ messages, currentUser }: MessageListProps)
           <MessageItem
             key={message.id}
             message={message}
-            isCurrentUser={message.sender.id === currentUser.id}
+            isCurrentUser={message.senderId === currentUser.id}
+            sender={getSender(message.senderId)}
           />
         ))}
       </div>

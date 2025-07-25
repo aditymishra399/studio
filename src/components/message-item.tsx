@@ -1,4 +1,4 @@
-import type { Message } from "@/lib/types";
+import type { Message, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,14 +8,22 @@ import * as React from "react";
 interface MessageItemProps {
   message: Message;
   isCurrentUser: boolean;
+  sender: User | undefined;
 }
 
-export default function MessageItem({ message, isCurrentUser }: MessageItemProps) {
+export default function MessageItem({ message, isCurrentUser, sender }: MessageItemProps) {
   const [formattedTimestamp, setFormattedTimestamp] = React.useState("");
 
   React.useEffect(() => {
-    setFormattedTimestamp(format(new Date(message.timestamp), "p"));
+    if (message.timestamp) {
+       const date = message.timestamp instanceof Date ? message.timestamp : (message.timestamp as any).toDate();
+       setFormattedTimestamp(format(date, "p"));
+    }
   }, [message.timestamp]);
+  
+  if (!sender) {
+    return null;
+  }
 
   return (
     <div
@@ -26,9 +34,9 @@ export default function MessageItem({ message, isCurrentUser }: MessageItemProps
     >
       {!isCurrentUser && (
         <Avatar className="w-8 h-8">
-          <AvatarImage src={message.sender.avatarUrl} alt={message.sender.name} data-ai-hint="person profile" />
+          <AvatarImage src={sender.avatarUrl} alt={sender.name || ""} data-ai-hint="person profile" />
           <AvatarFallback>
-            {message.sender.name.charAt(0).toUpperCase()}
+            {sender.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}

@@ -2,94 +2,76 @@
 "use client";
 
 import * as React from "react";
-import { conversations as initialConversations, users } from "@/lib/data";
-import type { Conversation, Message } from "@/lib/types";
+import type { Conversation, Message, User } from "@/lib/types";
 import ChatSidebar from "@/components/chat-sidebar";
 import ChatPanel from "@/components/chat-panel";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { getConversations, sendMessage, createConversation } from "@/services/firestore";
+import { users as mockUsers } from "@/lib/data"; // for user discovery
 
 export default function ChatPage() {
-  const [conversations, setConversations] =
-    React.useState<Conversation[]>(initialConversations);
-  const [selectedConversation, setSelectedConversation] =
-    React.useState<Conversation | null>(conversations[0] || null);
+  const { user: currentUser } = useAuth();
+  const [conversations, setConversations] = React.useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = React.useState<Conversation | null>(null);
   const { toast } = useToast();
-  const currentUser = users[0];
 
-  const handleSendMessage = (content: string) => {
-    if (!selectedConversation) return;
+  React.useEffect(() => {
+    if (!currentUser) return;
+    const unsubscribe = getConversations(currentUser.uid, setConversations);
+    return () => unsubscribe();
+  }, [currentUser]);
 
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      sender: currentUser,
-      content,
-      timestamp: new Date().toISOString(),
-    };
+  const handleSendMessage = async (content: string) => {
+    if (!selectedConversation || !currentUser) return;
 
-    const updatedConversations = conversations.map((convo) => {
-      if (convo.id === selectedConversation.id) {
-        return {
-          ...convo,
-          messages: [...convo.messages, newMessage],
-        };
-      }
-      return convo;
-    });
-
-    setConversations(updatedConversations);
-    setSelectedConversation(
-      updatedConversations.find((c) => c.id === selectedConversation.id) || null
-    );
-
-    // Simulate a reply
-    setTimeout(() => {
-      const otherUser = selectedConversation.participants.find(
-        (p) => p.id !== currentUser.id
-      );
-      if (otherUser) {
-        const replyMessage: Message = {
-          id: `msg-${Date.now() + 1}`,
-          sender: otherUser,
-          content: "Got it, thanks!",
-          timestamp: new Date().toISOString(),
-        };
-
-        const finalConversations = updatedConversations.map((convo) => {
-          if (convo.id === selectedConversation.id) {
-            return {
-              ...convo,
-              messages: [...convo.messages, replyMessage],
-            };
-          }
-          return convo;
-        });
-
-        setConversations(finalConversations);
-        setSelectedConversation(
-          finalConversations.find((c) => c.id === selectedConversation.id) ||
-            null
-        );
-        toast({
-          title: `New message from ${otherUser.name}`,
-          description: replyMessage.content,
-        });
-      }
-    }, 1500);
+    try {
+      await sendMessage(selectedConversation.id, currentUser.uid, content);
+    } catch (error) {
+       console.error("Failed to send message:", error);
+       toast({
+         variant: "destructive",
+         title: "Error",
+         description: "Failed to send message.",
+       });
+    }
   };
+
+  const handleSelectConversation = (conversation: Conversation) => {
+    const otherParticipant = mockUsers.find(u => u.id !== currentUser?.uid && conversation.participantIds.includes(u.id));
+
+    setSelectedConversation({
+      ...conversation,
+      participants: otherParticipant ? [mapAuthUserToAppUser(currentUser)!, otherParticipant] : [mapAuthUserToAppUser(currentUser)!]
+    });
+  }
+  
+  const mapAuthUserToAppUser = (authUser: any) : User | undefined => {
+    if (!authUser) return undefined;
+    const mockUser = mockUsers.find(u => u.email === authUser.email);
+    return {
+      id: authUser.uid,
+      name: mockUser?.name || authUser.email,
+      avatarUrl: mockUser?.avatarUrl || `https://placehold.co/100x100/947EC5/FFFFFF`,
+      email: authUser.email,
+    }
+  }
+  
+  const appUser = mapAuthUserToAppUser(currentUser);
 
   return (
     <div className="flex h-screen w-full antialiased text-foreground bg-background">
-      <ChatSidebar
+      {appUser && <ChatSidebar
         conversations={conversations}
         selectedConversation={selectedConversation}
-        onSelectConversation={setSelectedConversation}
-        currentUser={currentUser}
-      />
-      <ChatPanel
+        onSelectConversation={handleSelectConversation}
+        currentUser={appUser}
+      />}
+      {appUser && <ChatPanel
         conversation={selectedConversation}
         onSendMessage={handleSendMessage}
-        currentUser={currentUser}
-      />
+        currentUser={appUser}
+      />}
     </div>
   );
 }

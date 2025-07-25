@@ -15,10 +15,9 @@ export default function ConversationItem({
   onSelect,
   currentUser,
 }: ConversationItemProps) {
-  const otherParticipant = conversation.participants.find(
+  const otherParticipant = conversation.participants?.find(
     (p) => p.id !== currentUser.id
   );
-  const lastMessage = conversation.messages[conversation.messages.length - 1];
 
   if (!otherParticipant) return null;
 
@@ -41,7 +40,7 @@ export default function ConversationItem({
       <div className="flex-1 overflow-hidden">
         <p className="font-semibold truncate">{otherParticipant.name}</p>
         <p className={cn("text-sm truncate", isSelected ? 'text-primary/80' : 'text-muted-foreground')}>
-          {lastMessage?.content || "No messages yet"}
+          {conversation.lastMessage?.content || "No messages yet"}
         </p>
       </div>
     </button>

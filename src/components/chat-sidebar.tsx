@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BotMessageSquare, Settings } from "lucide-react";
 import ConversationList from "./conversation-list";
+import { users } from "@/lib/data";
 
 interface ChatSidebarProps {
   conversations: Conversation[];
@@ -18,6 +19,14 @@ export default function ChatSidebar({
   onSelectConversation,
   currentUser,
 }: ChatSidebarProps) {
+  
+  const populatedConversations = conversations.map(convo => {
+    const participants = convo.participantIds.map(id => {
+      return users.find(u => u.id === id) || { id, name: "Unknown", avatarUrl: "" }
+    }).filter(u => u.name !== "Unknown") as User[];
+    return { ...convo, participants };
+  })
+
   return (
     <div className="hidden md:flex flex-col w-80 max-w-xs min-w-80 h-full bg-card border-r">
       <div className="p-4 border-b">
@@ -28,7 +37,7 @@ export default function ChatSidebar({
       </div>
       <ScrollArea className="flex-1">
         <ConversationList
-          conversations={conversations}
+          conversations={populatedConversations}
           selectedConversation={selectedConversation}
           onSelectConversation={onSelectConversation}
           currentUser={currentUser}
@@ -38,9 +47,9 @@ export default function ChatSidebar({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} data-ai-hint="user avatar" />
+              <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name || ""} data-ai-hint="user avatar" />
               <AvatarFallback>
-                {currentUser.name.charAt(0).toUpperCase()}
+                {currentUser.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <span className="font-medium">{currentUser.name}</span>
