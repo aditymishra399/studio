@@ -26,7 +26,8 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
       router.push("/chat");
-    } catch (error: any)      toast({
+    } catch (error: any) {
+      toast({
         variant: "destructive",
         title: "Login Failed",
         description: error.message || "An unexpected error occurred.",
