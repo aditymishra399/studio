@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/auth-provider";
 
 export const metadata: Metadata = {
-  title: "Silent Line",
+  title: "SilentLine",
   description: "Securely send text messages to other users.",
 };
 

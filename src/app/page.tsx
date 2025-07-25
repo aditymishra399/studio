@@ -10,7 +10,7 @@ export default function Home() {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BotMessageSquare className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Silent Line</h1>
+            <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
           </div>
           <nav className="flex items-center gap-4">
             <AuthButton />
@@ -24,7 +24,7 @@ export default function Home() {
               Secure & Private Messaging
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Silent Line uses advanced AI to ensure your conversations are
+              SilentLine uses advanced AI to ensure your conversations are
               safe, redacting sensitive information before it's ever sent.
             </p>
             <Link href="/chat">
@@ -63,7 +63,7 @@ export default function Home() {
       </main>
       <footer className="p-4 border-t">
         <div className="container mx-auto text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Silent Line. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SilentLine. All rights reserved.</p>
         </div>
       </footer>
     </div>

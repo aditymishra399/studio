@@ -23,7 +23,7 @@ export default function ChatSidebar({
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
           <BotMessageSquare className="w-8 h-8 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Silent Line</h1>
+          <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
         </div>
       </div>
       <ScrollArea className="flex-1">

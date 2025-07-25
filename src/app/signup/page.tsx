@@ -55,7 +55,7 @@ export default function SignUpPage() {
         <CardHeader className="text-center">
             <div className="flex justify-center items-center gap-3 mb-4">
              <BotMessageSquare className="w-8 h-8 text-primary" />
-             <h1 className="text-2xl font-bold tracking-tight">Silent Line</h1>
+             <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
           </div>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
           <CardDescription>Enter your email and password to get started.</CardDescription>
