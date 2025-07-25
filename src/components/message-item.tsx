@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Lock } from "lucide-react";
+import * as React from "react";
 
 interface MessageItemProps {
   message: Message;
@@ -10,6 +11,12 @@ interface MessageItemProps {
 }
 
 export default function MessageItem({ message, isCurrentUser }: MessageItemProps) {
+  const [formattedTimestamp, setFormattedTimestamp] = React.useState("");
+
+  React.useEffect(() => {
+    setFormattedTimestamp(format(new Date(message.timestamp), "p"));
+  }, [message.timestamp]);
+
   return (
     <div
       className={cn(
@@ -36,7 +43,7 @@ export default function MessageItem({ message, isCurrentUser }: MessageItemProps
         <p className="text-sm leading-relaxed">{message.content}</p>
         <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
           <Lock className="w-3 h-3" />
-          <span>{format(new Date(message.timestamp), "p")}</span>
+          {formattedTimestamp ? <span>{formattedTimestamp}</span> : null}
         </div>
       </div>
     </div>
