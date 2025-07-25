@@ -68,7 +68,7 @@ export default function ConversationPage() {
         if (doc.exists()) {
             const updatedData = doc.data();
             setConversation(prev => {
-                // If we have a previous state, update it. Otherwise, we might be in a state where initial fetch hasn't completed.
+                // If we have a previous state, update it's messages and last message.
                 if (!prev) return null;
                 return {
                     ...prev,
