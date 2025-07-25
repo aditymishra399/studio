@@ -35,16 +35,14 @@ export default function ChatLayout({
   const isChatPage = pathname === '/chat';
   const isNewChatPage = pathname === '/chat/new';
   const isProfilePage = pathname === '/chat/profile';
-  const showBackButton = !isChatPage && !isProfilePage;
   const isConversationPage = /^\/chat\/.+/.test(pathname) && !isNewChatPage && !isProfilePage;
 
   const title = useMemo(() => {
     if (isNewChatPage) return 'New Chat';
     if (isProfilePage) return 'Profile';
     if (isChatPage) return 'SilentLine';
-    if (isConversationPage) return ''; // Title will be handled by the ChatHeader component
-    return 'SilentLine';
-  }, [pathname, isNewChatPage, isProfilePage, isChatPage, isConversationPage]);
+    return 'SilentLine'; // Default title
+  }, [pathname, isNewChatPage, isProfilePage, isChatPage]);
 
 
   if (loading || !user) {
@@ -88,7 +86,7 @@ export default function ChatLayout({
         {!isConversationPage && (
           <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
               <div className="flex items-center gap-4">
-                {showBackButton && (
+                {pathname !== '/chat' && (
                   <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="w-6 h-6" />
                   </Button>
