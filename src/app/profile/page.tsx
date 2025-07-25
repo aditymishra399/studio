@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Fingerprint, Upload, User, Mail, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Fingerprint, Upload, User, Mail, ShieldCheck, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { updateUserProfile } from "@/services/auth"; // We will create this function
+import { updateUserProfile } from "@/services/auth";
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [name, setName] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -32,6 +32,11 @@ export default function ProfilePage() {
       }
     }
   }, [user, loading, router]);
+  
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/login");
+  };
 
   const handlePhotoChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -55,8 +60,8 @@ export default function ProfilePage() {
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
-      // Optionally refresh the page or user state if needed
-      router.refresh();
+      // Force a reload of the user data within the auth context
+       router.refresh();
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -71,12 +76,8 @@ export default function ProfilePage() {
   if (loading || !user) {
       return (
          <div className="flex items-center justify-center min-h-screen bg-background">
-          <Card className="w-full max-w-md animate-pulse">
+          <Card className="w-full max-w-md animate-pulse m-4">
             <CardHeader className="text-center">
-                <div className="flex justify-center items-center gap-3 mb-4">
-                 <Fingerprint className="w-8 h-8 text-primary" />
-                 <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
-              </div>
               <CardTitle className="text-2xl">Edit Profile</CardTitle>
               <CardDescription>Update your account details.</CardDescription>
             </CardHeader>
@@ -97,23 +98,19 @@ export default function ProfilePage() {
                 <div className="h-10 w-full bg-muted rounded-md mt-4" />
               </div>
             </CardContent>
+             <CardFooter className="flex-col gap-4">
+               <div className="h-10 w-full bg-muted rounded-md" />
+               <div className="h-10 w-full bg-muted rounded-md" />
+            </CardFooter>
           </Card>
         </div>
       )
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-full bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-            <div className="flex justify-center items-center gap-3 mb-4">
-             <Fingerprint className="w-8 h-8 text-primary" />
-             <h1 className="text-2xl font-bold tracking-tight">SilentLine</h1>
-          </div>
-          <CardTitle className="text-2xl">Edit Profile</CardTitle>
-          <CardDescription>Update your account details below.</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="space-y-2 flex flex-col items-center">
                 <Avatar className="h-24 w-24 mb-2">
@@ -159,10 +156,13 @@ export default function ProfilePage() {
               {isLoading ? "Saving Changes..." : "Save Changes"}
             </Button>
           </form>
-           <div className="mt-4 text-center text-sm">
-            <Button variant="link" onClick={() => router.push('/chat')}>Back to Chat</Button>
-          </div>
         </CardContent>
+        <CardFooter className="flex-col gap-2">
+             <Button variant="outline" className="w-full" onClick={handleSignOut} disabled={isLoading}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+            </Button>
+        </CardFooter>
       </Card>
     </div>
   );

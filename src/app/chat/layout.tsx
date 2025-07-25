@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users, Phone, LogOut, Search, Camera, ArrowLeft } from "lucide-react";
+import { MessageSquare, Users, Phone, User as UserIcon, ArrowLeft, Search, Camera } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,7 +33,8 @@ export default function ChatLayout({
 
   const isChatPage = pathname === '/chat';
   const isNewChatPage = pathname === '/chat/new';
-  const showBackButton = !isChatPage;
+  const isProfilePage = pathname === '/profile';
+  const showBackButton = !isChatPage && !isProfilePage;
 
 
   if (loading || !user) {
@@ -81,8 +82,8 @@ export default function ChatLayout({
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
               )}
-              <h1 className="text-2xl font-bold text-primary tracking-tight">
-                {isNewChatPage ? 'New Chat' : 'SilentLine'}
+               <h1 className="text-2xl font-bold text-primary tracking-tight">
+                {isNewChatPage ? 'New Chat' : isProfilePage ? 'Profile' : 'SilentLine'}
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -92,36 +93,34 @@ export default function ChatLayout({
                 <Button variant="ghost" size="icon" onClick={() => router.push('/chat/new')}>
                     <Search className="w-5 h-5"/>
                 </Button>
-                 <Button variant="ghost" size="icon" onClick={() => router.push('/profile')}>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.photoURL || undefined} alt="User avatar" data-ai-hint="person face" />
-                       <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                </Button>
+                 <Avatar className="h-8 w-8">
+                   <AvatarImage src={user.photoURL || undefined} alt="User avatar" data-ai-hint="person face" />
+                    <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                 </Avatar>
             </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-20">
             {children}
         </main>
         
-        <nav className="flex justify-around p-2 border-t bg-background sticky bottom-0">
+        <nav className="flex justify-around p-2 border-t bg-background fixed bottom-0 w-full">
             <Link href="/chat" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname.startsWith('/chat') ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
                 <MessageSquare className="w-6 h-6"/>
                 <span className="text-xs font-medium">Chats</span>
             </Link>
              <Link href="#" className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors">
                 <Users className="w-6 h-6"/>
-                <span className="text-xs font-medium">Communities</span>
+                <span className="text-xs font-medium">Updates</span>
             </Link>
              <Link href="#" className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors">
                 <Phone className="w-6 h-6"/>
                 <span className="text-xs font-medium">Calls</span>
             </Link>
-            <button onClick={handleSignOut} className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors">
-                <LogOut className="w-6 h-6"/>
-                <span className="text-xs font-medium">Logout</span>
-            </button>
+            <Link href="/profile" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname === '/profile' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
+                <UserIcon className="w-6 h-6"/>
+                <span className="text-xs font-medium">Profile</span>
+            </Link>
         </nav>
       </div>
   );
