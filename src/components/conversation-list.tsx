@@ -1,3 +1,4 @@
+
 import type { Conversation, User } from "@/lib/types";
 import ConversationItem from "./conversation-item";
 
@@ -14,6 +15,13 @@ export default function ConversationList({
   onSelectConversation,
   currentUser,
 }: ConversationListProps) {
+  if (conversations.length === 0) {
+    return (
+      <div className="p-4 text-center text-sm text-muted-foreground">
+        No conversations yet. Start one by searching for a friend.
+      </div>
+    );
+  }
   return (
     <nav className="p-2 space-y-1">
       {conversations.map((conversation) => (

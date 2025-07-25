@@ -1,3 +1,4 @@
+
 import type { Message, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -16,8 +17,10 @@ export default function MessageItem({ message, isCurrentUser, sender }: MessageI
 
   React.useEffect(() => {
     if (message.timestamp) {
-       const date = message.timestamp instanceof Date ? message.timestamp : (message.timestamp as any).toDate();
-       setFormattedTimestamp(format(date, "p"));
+       const date = (message.timestamp as any).toDate ? (message.timestamp as any).toDate() : new Date(message.timestamp);
+       if (date instanceof Date && !isNaN(date.valueOf())) {
+         setFormattedTimestamp(format(date, "p"));
+       }
     }
   }, [message.timestamp]);
   
@@ -48,7 +51,7 @@ export default function MessageItem({ message, isCurrentUser, sender }: MessageI
             : "bg-card text-card-foreground rounded-bl-md"
         )}
       >
-        <p className="text-sm leading-relaxed">{message.content}</p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
         <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
           <Lock className="w-3 h-3" />
           {formattedTimestamp ? <span>{formattedTimestamp}</span> : null}
