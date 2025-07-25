@@ -8,6 +8,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyC4B5rSZBsHR157PxMtAakY_HrZ23of-PU",
   authDomain: "whispertext-2jbmc.firebaseapp.com",
   messagingSenderId: "765883214993",
+  measurementId: "G-XXXXXXXXXX"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
