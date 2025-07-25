@@ -6,10 +6,11 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users, Phone, User as UserIcon, ArrowLeft, Search, Camera } from "lucide-react";
+import { MessageSquare, Users, Phone, User as UserIcon, ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 export default function ChatLayout({
   children,
@@ -87,9 +88,6 @@ export default function ChatLayout({
                </h1>
             </div>
             <div className="flex items-center gap-2">
-                 <Button variant="ghost" size="icon">
-                    <Camera className="w-5 h-5"/>
-                </Button>
                 <Button variant="ghost" size="icon" onClick={() => router.push('/chat/new')}>
                     <Search className="w-5 h-5"/>
                 </Button>
@@ -109,13 +107,15 @@ export default function ChatLayout({
                 <MessageSquare className="w-6 h-6"/>
                 <span className="text-xs font-medium">Chats</span>
             </Link>
-             <Link href="#" className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors">
+             <Link href="#" className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors relative">
                 <Users className="w-6 h-6"/>
                 <span className="text-xs font-medium">Updates</span>
+                <Badge variant="secondary" className="absolute top-0 right-0 text-xs px-1 py-0">Soon</Badge>
             </Link>
-             <Link href="#" className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors">
+             <Link href="#" className="flex flex-col items-center gap-1 rounded-lg p-2 text-muted-foreground hover:text-foreground transition-colors relative">
                 <Phone className="w-6 h-6"/>
                 <span className="text-xs font-medium">Calls</span>
+                 <Badge variant="secondary" className="absolute top-0 right-0 text-xs px-1 py-0">Soon</Badge>
             </Link>
             <Link href="/chat/profile" className={cn("flex flex-col items-center gap-1 rounded-lg p-2 transition-colors", pathname === '/chat/profile' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}>
                 <UserIcon className="w-6 h-6"/>
