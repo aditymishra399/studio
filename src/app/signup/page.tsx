@@ -33,7 +33,7 @@ export default function SignUpPage() {
     try {
       await signUp(email, password);
       router.push("/chat");
-    } catch (error: any).tsx
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Sign Up Failed",
