@@ -29,18 +29,23 @@ export default function ConversationPage() {
 
     const convRef = doc(db, "conversations", conversationId);
     
+    // Fetch initial conversation data once
     const fetchInitialData = async () => {
+      setLoading(true);
       try {
         const docSnap = await getDoc(convRef);
+
         if (docSnap.exists()) {
           const convData = { id: docSnap.id, ...docSnap.data() } as Conversation;
 
+          // Check for authorization
           if (!convData.participantIds.includes(currentUser.uid)) {
             toast({ variant: "destructive", title: "Unauthorized", description: "You are not part of this conversation." });
             router.push('/chat');
             return;
           }
 
+          // Fetch participant details
           const participants = await Promise.all(
             convData.participantIds.map(async (id) => {
               const userDocSnap = await getDoc(doc(db, "users", id));
@@ -64,12 +69,13 @@ export default function ConversationPage() {
     
     fetchInitialData();
     
+    // Set up a separate listener ONLY for real-time message updates
     const unsubscribe = onSnapshot(convRef, (doc) => {
         if (doc.exists()) {
             const updatedData = doc.data();
+            // Update only the messages part of the state to prevent re-fetching participants
             setConversation(prev => {
-                // If we have a previous state, update it's messages and last message.
-                if (!prev) return null;
+                if (!prev) return null; // Don't update if initial data isn't loaded yet
                 return {
                     ...prev,
                     messages: updatedData.messages,
@@ -134,6 +140,7 @@ export default function ConversationPage() {
   }
 
   if (!conversation || !appUser) {
+    // This can happen briefly or on an error, router should redirect.
     return null;
   }
 
