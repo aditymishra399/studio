@@ -3,13 +3,14 @@
 
 import type { User } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { memo } from "react";
 
 interface UserSearchResultsProps {
   results: User[];
   onSelectUser: (user: User) => void;
 }
 
-export default function UserSearchResults({ results, onSelectUser }: UserSearchResultsProps) {
+const UserSearchResults = memo(function UserSearchResults({ results, onSelectUser }: UserSearchResultsProps) {
   if (results.length === 0) {
     return (
       <div className="p-4 text-center text-sm text-muted-foreground">
@@ -38,4 +39,6 @@ export default function UserSearchResults({ results, onSelectUser }: UserSearchR
       ))}
     </div>
   );
-}
+});
+
+export default UserSearchResults;

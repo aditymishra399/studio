@@ -25,13 +25,14 @@ interface MessageInputProps {
 export default function MessageInput({ onSendMessage }: MessageInputProps) {
   const [message, setMessage] = React.useState("");
   const [isRedacting, setIsRedacting] = React.useState(false);
+  const [isSending, setIsSending] = React.useState(false);
   const [redactionResult, setRedactionResult] = React.useState<{
     redactedContent: string;
     sensitiveTerms: string[];
   } | null>(null);
   const { toast } = useToast();
 
-  const handleRedactClick = async () => {
+  const handleRedactClick = React.useCallback(async () => {
     if (!message.trim()) return;
 
     setIsRedacting(true);
@@ -55,22 +56,27 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
     } finally {
       setIsRedacting(false);
     }
-  };
+  }, [message, toast]);
 
-  const handleConfirmRedaction = () => {
+  const handleConfirmRedaction = React.useCallback(() => {
     if (redactionResult) {
       setMessage(redactionResult.redactedContent);
       setRedactionResult(null);
     }
-  };
+  }, [redactionResult]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = React.useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message);
+    if (message.trim() && !isSending) {
+      setIsSending(true);
+      try {
+        await onSendMessage(message);
+      } finally {
+        setIsSending(false);
+      }
       setMessage("");
     }
-  };
+  }, [message, onSendMessage, isSending]);
 
   return (
     <div className="p-4 border-t bg-card">
@@ -133,7 +139,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
           </AlertDialog>
           <Button type="submit" size="icon" disabled={!message.trim()}>
             <SendHorizonal className="w-5 h-5" />
-          </Button>
+      <Button type="submit" size="icon" disabled={!message.trim() || isSending}>
         </div>
       </form>
     </div>

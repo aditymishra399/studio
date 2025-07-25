@@ -23,6 +23,7 @@ export default function ConversationPage() {
 
   const [conversation, setConversation] = React.useState<Conversation | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
   React.useEffect(() => {
     if (!currentUser || !conversationId) return;
@@ -31,7 +32,9 @@ export default function ConversationPage() {
     
     // Fetch initial conversation data once
     const fetchInitialData = async () => {
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       try {
         const docSnap = await getDoc(convRef);
 
@@ -63,7 +66,10 @@ export default function ConversationPage() {
         console.error("Error fetching conversation", e);
         toast({ variant: "destructive", title: "Error", description: "Could not load the conversation." });
       } finally {
-        setLoading(false);
+        if (isInitialLoad) {
+          setLoading(false);
+          setIsInitialLoad(false);
+        }
       }
     };
     
@@ -95,7 +101,7 @@ export default function ConversationPage() {
     return conversation.participants.find(p => p.id === currentUser.uid);
   }, [currentUser, conversation]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = React.useCallback(async (content: string) => {
     if (!conversationId || !appUser) return;
 
     try {
@@ -108,7 +114,7 @@ export default function ConversationPage() {
          description: "Failed to send message.",
        });
     }
-  };
+  }, [conversationId, appUser, toast]);
 
   if (authLoading || loading) {
     return (

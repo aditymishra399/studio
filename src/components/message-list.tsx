@@ -1,7 +1,7 @@
 import type { Message, User } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageItem from "./message-item";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 
 interface MessageListProps {
   messages: Message[];
@@ -9,7 +9,7 @@ interface MessageListProps {
   participants: User[];
 }
 
-export default function MessageList({ messages, currentUser, participants }: MessageListProps) {
+const MessageList = memo(function MessageList({ messages, currentUser, participants }: MessageListProps) {
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,4 +39,6 @@ export default function MessageList({ messages, currentUser, participants }: Mes
       </div>
     </ScrollArea>
   );
-}
+});
+
+export default MessageList;

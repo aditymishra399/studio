@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Lock } from "lucide-react";
-import * as React from "react";
+import { memo, useMemo } from "react";
 
 interface MessageItemProps {
   message: Message;
@@ -12,20 +12,19 @@ interface MessageItemProps {
   sender: User | undefined;
 }
 
-export default function MessageItem({ message, isCurrentUser, sender }: MessageItemProps) {
-  const [formattedTimestamp, setFormattedTimestamp] = React.useState("");
-
-  React.useEffect(() => {
-    if (message.timestamp) {
-       // Firebase timestamps can be objects or seconds/nanoseconds.
-       // This handles converting it to a JS Date object safely.
-       const date = (message.timestamp as any).toDate ? (message.timestamp as any).toDate() : new Date();
-       if (date instanceof Date && !isNaN(date.valueOf())) {
-         setFormattedTimestamp(format(date, "p"));
-       }
+const MessageItem = memo(function MessageItem({ message, isCurrentUser, sender }: MessageItemProps) {
+  const formattedTimestamp = useMemo(() => {
+    if (!message.timestamp) return "";
+    
+    // Firebase timestamps can be objects or seconds/nanoseconds.
+    // This handles converting it to a JS Date object safely.
+    const date = (message.timestamp as any).toDate ? (message.timestamp as any).toDate() : new Date();
+    if (date instanceof Date && !isNaN(date.valueOf())) {
+      return format(date, "p");
     }
+    return "";
   }, [message.timestamp]);
-  
+
   if (!sender) {
     // Return a placeholder or null if sender info isn't available yet
     return null;
@@ -62,4 +61,6 @@ export default function MessageItem({ message, isCurrentUser, sender }: MessageI
       </div>
     </div>
   );
-}
+});
+
+export default MessageItem;

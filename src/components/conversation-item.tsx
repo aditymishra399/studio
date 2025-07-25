@@ -3,6 +3,7 @@ import type { Conversation, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, format } from 'date-fns';
+import { memo, useMemo } from "react";
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -11,7 +12,7 @@ interface ConversationItemProps {
   currentUser: User;
 }
 
-export default function ConversationItem({
+const ConversationItem = memo(function ConversationItem({
   conversation,
   isSelected,
   onSelect,
@@ -23,7 +24,8 @@ export default function ConversationItem({
 
   if (!otherParticipant) return null;
 
-  const formatTimestamp = (timestamp: any) => {
+  const formattedTimestamp = useMemo(() => {
+    const timestamp = conversation.lastMessage?.timestamp;
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     try {
@@ -36,7 +38,7 @@ export default function ConversationItem({
     } catch(e) {
         return '';
     }
-  }
+  }, [conversation.lastMessage?.timestamp]);
   
   const unreadCount = 0; // Placeholder for unread count logic
 
@@ -60,7 +62,7 @@ export default function ConversationItem({
         <div className="flex justify-between items-center">
             <p className="font-semibold truncate text-base">{otherParticipant.name}</p>
             <p className={cn("text-xs", unreadCount > 0 ? "text-primary font-bold" : "text-muted-foreground")}>
-              {formatTimestamp(conversation.lastMessage?.timestamp)}
+              {formattedTimestamp}
             </p>
         </div>
         <div className="flex justify-between items-start">
@@ -76,4 +78,6 @@ export default function ConversationItem({
       </div>
     </button>
   );
-}
+});
+
+export default ConversationItem;

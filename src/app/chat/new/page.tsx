@@ -31,6 +31,13 @@ export default function NewChatPage() {
     return () => unsubscribeUsers();
   }, [currentUser]);
 
+  const debouncedSearchTerm = React.useMemo(() => {
+    const timeoutId = setTimeout(() => {
+      return searchTerm;
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
   React.useEffect(() => {
     const results = allUsers.filter(user => 
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,7 +46,7 @@ export default function NewChatPage() {
     setFilteredUsers(results);
   }, [searchTerm, allUsers]);
 
-  const handleSelectUser = async (selectedUser: User) => {
+  const handleSelectUser = React.useCallback(async (selectedUser: User) => {
     if (!currentUser) {
         toast({ variant: "destructive", title: "You must be logged in." });
         return;
@@ -66,7 +73,7 @@ export default function NewChatPage() {
         console.error("Error creating or finding conversation:", error);
         toast({ variant: "destructive", title: "Error starting chat." });
     }
-  };
+  }, [currentUser, router, toast]);
 
   return (
     <div className="p-4">

@@ -35,7 +35,7 @@ export default function ChatPage() {
     };
   }, [currentUser]);
 
-  const mapAuthUserToAppUser = (authUser: any) : User | undefined => {
+  const mapAuthUserToAppUser = React.useCallback((authUser: any) : User | undefined => {
       if (!authUser) return undefined;
       const appUser = allUsers.find(u => u.id === authUser.uid);
       return appUser || {
@@ -44,22 +44,22 @@ export default function ChatPage() {
           avatarUrl: authUser.photoURL || `https://placehold.co/100x100/947EC5/FFFFFF`,
           email: authUser.email,
       };
-  }
+  }, [allUsers]);
 
-  const appUser = mapAuthUserToAppUser(currentUser);
+  const appUser = React.useMemo(() => mapAuthUserToAppUser(currentUser), [mapAuthUserToAppUser, currentUser]);
   
-  const handleSelectConversation = (conversationId: string) => {
+  const handleSelectConversation = React.useCallback((conversationId: string) => {
     router.push(`/chat/${conversationId}`);
-  }
+  }, [router]);
 
-  const handleCreateNewChat = () => {
+  const handleCreateNewChat = React.useCallback(() => {
     router.push('/chat/new');
-  }
+  }, [router]);
   
-  const populatedConversations = conversations.map(convo => {
+  const populatedConversations = React.useMemo(() => conversations.map(convo => {
     const otherParticipants = convo.participants?.filter(u => u.id !== appUser?.id);
     return { ...convo, participants: otherParticipants || [] };
-  });
+  }), [conversations, appUser]);
 
 
   return (

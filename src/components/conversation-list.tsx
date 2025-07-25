@@ -1,6 +1,7 @@
 
 import type { Conversation, User } from "@/lib/types";
 import ConversationItem from "./conversation-item";
+import { memo } from "react";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -8,7 +9,7 @@ interface ConversationListProps {
   currentUser: User;
 }
 
-export default function ConversationList({
+const ConversationList = memo(function ConversationList({
   conversations,
   onSelectConversation,
   currentUser,
@@ -33,4 +34,6 @@ export default function ConversationList({
       ))}
     </nav>
   );
-}
+});
+
+export default ConversationList;

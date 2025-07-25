@@ -14,7 +14,8 @@ import {
   arrayUnion,
   limit,
   getDocs,
-  setDoc
+  setDoc,
+  writeBatch
 } from "firebase/firestore";
 import type { Conversation, Message, User } from "@/lib/types";
 
@@ -65,11 +66,15 @@ export const getAllUsers = (callback: (users: User[]) => void) => {
 export const getConversations = (userId: string, callback: (conversations: Conversation[]) => void) => {
   const q = query(
     collection(db, "conversations"),
-    where("participantIds", "array-contains", userId)
+    where("participantIds", "array-contains", userId),
+    limit(50) // Limit to 50 most recent conversations
     // The orderBy clause is removed to prevent the composite index error.
     // We will sort the results on the client side.
     // orderBy("lastMessage.timestamp", "desc")
   );
+
+  // Cache for user data to avoid repeated fetches
+  const userCache = new Map<string, User>();
 
   const unsubscribe = onSnapshot(q, async (querySnapshot) => {
     const conversations: Conversation[] = [];
@@ -78,8 +83,18 @@ export const getConversations = (userId: string, callback: (conversations: Conve
       
       const participants = await Promise.all(
         conversationData.participantIds.map(async (id) => {
+          // Check cache first
+          if (userCache.has(id)) {
+            return userCache.get(id)!;
+          }
+          
           const userDoc = await getDoc(doc(db, "users", id));
-          return userDoc.exists() ? userDoc.data() as User : null;
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as User;
+            userCache.set(id, userData);
+            return userData;
+          }
+          return null;
         })
       );
 
