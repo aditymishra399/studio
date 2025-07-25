@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -32,7 +33,11 @@ export default function SignUpPage() {
     setIsLoading(true);
     try {
       await signUp(email, password);
-      router.push("/chat");
+      toast({
+        title: "Account Created",
+        description: "Your account has been successfully created. Please log in.",
+      });
+      router.push("/login");
     } catch (error: any) {
       toast({
         variant: "destructive",
